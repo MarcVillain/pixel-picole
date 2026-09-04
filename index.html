@@ -810,40 +810,72 @@ registerDesign({
 
 /* ---------- 4.2 4 SAISONS : semaines ISO groupées par saison ---------- */
 /* Vignettes de saison en vectoriel. Aucune police de symboles à charger,
-   donc un rendu identique à l'écran, à l'impression et dans le SVG. */
+   donc un rendu identique à l'écran, à l'impression et dans le SVG.
+
+   Les quatre partagent la même grammaire : trait unique de même épaisseur,
+   aucun aplat, même encombrement, même densité de détail. Chacune se lit
+   comme un dessin au feutre fin, dans l'esprit de la planche d'origine. */
+const seasonStroke = r => Math.max(.26, r * .055);
+
 const SEASON_MARKS = {
+  /* cinq pétales posés sur un cœur */
   fleur(c, x, y, r) {
-    for (let i = 0; i < 6; i++) {
-      const a = i * Math.PI / 3;
-      c.disc(x + Math.cos(a) * r * .58, y + Math.sin(a) * r * .58, r * .38, { fill:"ink", shape:false });
+    const w = seasonStroke(r), base = r * .21, N = 16;
+    for (let k = 0; k < 5; k++) {
+      const a = -Math.PI / 2 + k * 2 * Math.PI / 5;
+      const ux = Math.cos(a), uy = Math.sin(a);          // axe du pétale
+      const at = (rad, off) => [x + ux * rad - uy * off, y + uy * rad + ux * off];
+      const wid = t => r * .29 * Math.sin(Math.PI * Math.pow(t, .88));
+      const pts = [];
+      for (let i = 0; i <= N; i++) { const t = i / N; pts.push(at(base + (r - base) * t, wid(t))); }
+      for (let i = N; i >= 0; i--) { const t = i / N; pts.push(at(base + (r - base) * t, -wid(t))); }
+      c.poly(pts, { closed: true, w });
     }
-    c.disc(x, y, r * .3, { fill:"paper", stroke:"ink", w: .3, shape:false });
+    c.disc(x, y, base, { fill: "paper", stroke: "ink", w, shape: false });
   },
+
   soleil(c, x, y, r) {
-    c.disc(x, y, r * .46, { fill:"ink", shape:false });
+    const w = seasonStroke(r);
+    c.disc(x, y, r * .42, { fill: "none", stroke: "ink", w, shape: false });
     for (let i = 0; i < 8; i++) {
-      const a = i * Math.PI / 4;
-      c.line(x + Math.cos(a) * r * .68, y + Math.sin(a) * r * .68,
-             x + Math.cos(a) * r, y + Math.sin(a) * r, { w: .32 });
+      const a = i * Math.PI / 4 - Math.PI / 2;
+      c.line(x + Math.cos(a) * r * .62, y + Math.sin(a) * r * .62,
+             x + Math.cos(a) * r, y + Math.sin(a) * r, { w });
     }
   },
+
   feuille(c, x, y, r) {
+    const w = seasonStroke(r);
     const a = -Math.PI / 4, ca = Math.cos(a), sa = Math.sin(a);
     const to = (u, v) => [x + u * ca - v * sa, y + u * sa + v * ca];
-    const pts = [];
-    for (let i = 0; i <= 14; i++) { const t = i / 14; pts.push(to((2 * t - 1) * r, Math.sin(Math.PI * t) * r * .45)); }
-    for (let i = 14; i >= 0; i--) { const t = i / 14; pts.push(to((2 * t - 1) * r, -Math.sin(Math.PI * t) * r * .45)); }
-    c.poly(pts, { closed: true, w: .32 });
-    c.line(to(-r, 0)[0], to(-r, 0)[1], to(r, 0)[0], to(r, 0)[1], { w: .28 });
+    const edge = t => Math.pow(Math.sin(Math.PI * t), 1.2) * r * .46;
+    const pts = [], N = 20;
+    for (let i = 0; i <= N; i++) { const t = i / N; pts.push(to((2 * t - 1) * r, edge(t))); }
+    for (let i = N; i >= 0; i--) { const t = i / N; pts.push(to((2 * t - 1) * r, -edge(t))); }
+    c.poly(pts, { closed: true, w });
+    c.line(...to(-r, 0), ...to(r * .9, 0), { w });
+    for (const tb of [.26, .43, .60]) {                    // nervures secondaires
+      const te = tb + .15;                                 // elles filent vers la pointe
+      const b = to((2 * tb - 1) * r, 0);
+      for (const sg of [1, -1]) {
+        const e = to((2 * te - 1) * r, sg * edge(te) * .7);
+        c.line(b[0], b[1], e[0], e[1], { w });
+      }
+    }
   },
+
   flocon(c, x, y, r) {
+    const w = seasonStroke(r);
     for (let i = 0; i < 3; i++) {
       const a = i * Math.PI / 3, dx = Math.cos(a) * r, dy = Math.sin(a) * r;
-      c.line(x - dx, y - dy, x + dx, y + dy, { w: .32 });
+      c.line(x - dx, y - dy, x + dx, y + dy, { w });
       for (const sg of [1, -1]) {
-        const px = x + dx * sg * .62, py = y + dy * sg * .62;
-        for (const t of [2.5, -2.5])
-          c.line(px, py, px + Math.cos(a + t) * r * .34, py + Math.sin(a + t) * r * .34, { w: .3 });
+        const arm = sg > 0 ? a : a + Math.PI;
+        for (const f of [.44, .74]) {                      // deux paires de barbes
+          const px = x + dx * sg * f, py = y + dy * sg * f;
+          for (const d of [.92, -.92])
+            c.line(px, py, px + Math.cos(arm + d) * r * .27, py + Math.sin(arm + d) * r * .27, { w });
+        }
       }
     }
   }
@@ -917,7 +949,7 @@ function seasonBlock(x, season, frame, forceYearW) {
   const numW  = fs * 2.6;
   const lw    = yearW + numW;
   const gapS  = P * .5;
-  const nameW = fs * 3.0;
+  const nameW = fs * 3.6;
   const gridW = 7 * P + (o.star ? gapS + P : 0);
   const headH = P * .95;
 
@@ -978,10 +1010,21 @@ function seasonBlock(x, season, frame, forceYearW) {
         }
       }
 
+      // Le nom court du haut du bloc vers le bas, très espacé, et la vignette
+      // se centre dans ce qui reste dessous. Même parti pris que la planche
+      // dessinée à la main.
       const bh = rws.length * P;
-      c.txt(gx + gridW + nameW * .42, gy + bh * .34, season.name,
-            { rot: 90, size: fs * 1.9, weight: 800, track: fs * .06 });
-      SEASON_MARKS[season.mark](c, gx + gridW + nameW * .45, gy + bh * .8, fs * 1.5);
+      const nx = gx + gridW + nameW * .46;
+      const nameSize = fs * 2.15, track = nameSize * .22;
+      const nameLen = measureW(season.name, nameSize, 800, SANS, false)
+                    + season.name.length * track;
+      const top = gy + P * .15;
+      c.txt(nx, top + nameLen / 2, season.name,
+            { rot: 90, size: nameSize, weight: 800, track });
+      const rest = gy + bh - (top + nameLen);
+      const ir = clamp(rest * .34, fs * .7, fs * 1.7);
+      const iy = Math.min(top + nameLen + ir * 1.5, gy + bh - ir * 1.15);
+      SEASON_MARKS[season.mark](c, nx, iy, ir);
     }
   };
 }
