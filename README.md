@@ -47,7 +47,8 @@ colours before buying anything. Print at full size, or export SVG.
 
 The title takes any of several fonts, and the first word can be set in pixel
 squares. Any setting that differs from its default shows a small arrow next to
-it, which puts that one setting back.
+it, which puts that one setting back. A strip at the top of the panel counts
+what has moved and puts everything back at once.
 
 Settings stay in your browser. The interface is in French, and every label on the
 sheet is editable.

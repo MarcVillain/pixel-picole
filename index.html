@@ -86,6 +86,13 @@ button,input,select,textarea{font:inherit;color:inherit}
   display:flex;flex-direction:column;min-height:0;position:relative;z-index:2;
 }
 .side-scroll{overflow-y:auto;padding:0 20px 20px;flex:1;scrollbar-width:thin}
+.changed{
+  display:flex;align-items:center;gap:10px;padding:9px 20px;flex:none;
+  border-bottom:1px solid var(--line);background:color-mix(in oklab,var(--accent) 8%,var(--panel));
+  font-size:11.5px;color:var(--ink-2)
+}
+.changed b{color:var(--ink);font-weight:700}
+.changed .chip{margin-left:auto;padding:4px 10px}
 .stage{
   position:relative;overflow:auto;padding:36px;display:flex;align-items:flex-start;justify-content:center;
   background:var(--bg);
@@ -284,6 +291,11 @@ input[type=color]{width:100%;height:30px;padding:2px;border:1px solid var(--line
         <p>Générateur de trackers à stickers</p>
       </div>
       <button class="theme-btn" id="skin" title="Apparence claire / sombre" aria-label="Basculer l'apparence">◐</button>
+    </div>
+
+    <div class="changed" id="changed" hidden>
+      <span id="changed-count"></span>
+      <button class="chip" id="reset-all">Tout remettre</button>
     </div>
 
     <div class="side-scroll">
@@ -1690,7 +1702,37 @@ function addReset(host, key, opt, def) {
   host.appendChild(b);
 }
 
+/* réglages qui s'écartent de leur valeur d'origine, options d'édition comprises */
+const NOT_A_SETTING = new Set(["previewSeed", "showLimits", "opts"]);
+function countChanged() {
+  let n = 0;
+  Object.keys(D).forEach(k => { if (!NOT_A_SETTING.has(k) && !isDefault(k)) n++; });
+  DESIGN_ORDER.forEach(id => {
+    const saved = S.opts[id] || {};
+    (DESIGNS[id].options || []).forEach(op => {
+      if (op.id in saved && JSON.stringify(saved[op.id]) !== JSON.stringify(op.def)) n++;
+    });
+  });
+  return n;
+}
+
+function syncChanged() {
+  const n = countChanged();
+  $("#changed").hidden = n === 0;
+  if (n) $("#changed-count").innerHTML = `<b>${n}</b> réglage${n > 1 ? "s" : ""} modifié${n > 1 ? "s" : ""}`;
+}
+
+$("#reset-all").onclick = () => {
+  S = defaults();
+  buildDesignCards();
+  buildDesignOptions();
+  buildLegendEditor();
+  syncInputs();
+  render();
+};
+
 function syncResets() {
+  syncChanged();
   document.querySelectorAll(".rst").forEach(b => {
     if (b.dataset.opt) b.hidden = JSON.stringify(optVal(b.dataset.opt)) === b.dataset.def;
     else b.hidden = isDefault(b.dataset.k);
@@ -1704,7 +1746,10 @@ document.addEventListener("click", e => {
   e.stopPropagation();
   if (b.dataset.opt) {
     const o = S.opts[S.design];
-    if (o) delete o[b.dataset.opt];
+    if (o) {
+      delete o[b.dataset.opt];
+      if (!Object.keys(o).length) delete S.opts[S.design];
+    }
     buildDesignOptions();
   } else if (b.dataset.k === "theme") {
     // choisir un thème écrit aussi le titre et les pastilles, donc y revenir
