@@ -108,11 +108,29 @@ un A4**. Le générateur le dit franchement plutôt que de rétrécir en douce, 
 propose en un clic le format qui convient — le plus petit qui passe quand il reste
 trop de blanc, le format au-dessus quand ça déborde.
 
+### Les repères
+
+Chaque case porte un repère imprimé, qui dit où coller sans se voir une fois la
+pastille posée. Cinq formes : **point** (discret, par défaut), **cercle** (gabarit
+au diamètre exact), **croix**, **plein** (à colorier au crayon) et **N°**, qui
+numérote les jours de 1 à 365 à partir de ta date de début — pratique pour
+retrouver un jour précis, ou pour tenir un carnet en regard.
+
+Un curseur règle leur **gris**, de l'encre au presque effacé. Un repère clair
+disparaît sous la gommette ; un repère foncé se lit à distance quand la planche
+est encore vide.
+
 ### Le décor
 
 Le mot principal du titre est **composé de carrés** — une police pixel 5 × 7
 dessinée dans le fichier, accents compris. Aucune police à charger : le titre est
 identique à l'écran, à l'impression et dans le SVG exporté.
+
+Le mot cursif à côté est mis à l'échelle sur mesure : sa hauteur de capitale est
+mesurée dans la police qui a réellement répondu sur la machine, puis ajustée pour
+tomber pile à la hauteur des lettres en pixels, sur la même ligne de base. Une
+anglaise élégante si le système en a une, une italique de labeur sinon — habillé
+sans en faire trop, dans les deux cas.
 
 Les carrés semés autour de la planche sont les mêmes, en 3 mm. Ils ne tombent pas
 au hasard : ils se posent sur une grille invisible au pas du pixel, en petites

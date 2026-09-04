@@ -327,8 +327,18 @@ input[type=color]{width:100%;height:30px;padding:2px;border:1px solid var(--line
             <button data-v="ring">Cercle</button>
             <button data-v="cross">Croix</button>
             <button data-v="fill">Plein</button>
+            <button data-v="num">N°</button>
           </div>
-          <div class="hint">Le repère indique où coller le sticker. « Point » = discret, « Cercle » = gabarit à la bonne taille.</div>
+          <div class="hint">Où coller la pastille. « Point » est discret, « Cercle » sert de gabarit,
+            « N° » numérote les jours de 1 à 365.</div>
+        </div>
+        <div class="f">
+          <label for="tint">Gris du repère</label>
+          <div class="slider">
+            <input type="range" id="tint" min="0" max="100" step="5">
+            <div class="val"><input type="number" id="tintN" min="0" max="100" step="5"></div>
+          </div>
+          <div class="hint">Plus c'est clair, plus le repère disparaît sous la pastille.</div>
         </div>
       </section>
 
@@ -460,7 +470,7 @@ class Canvas {
   add(e) { this.els.push(e); return e; }
   /** emplacement d'un sticker */
   dot(x, y, o)  { return this.add(Object.assign({ t:"dot", x, y }, o)); }
-  txt(x, y, s, o) { return this.add(Object.assign({ t:"text", x, y, s:String(s), size:3, anchor:"middle", weight:600, fill:"ink", rot:0, track:0 }, o)); }
+  txt(x, y, s, o) { return this.add(Object.assign({ t:"text", x, y, s:String(s), size:3, anchor:"middle", weight:600, fill:"ink", rot:0, track:0, baseline:"middle" }, o)); }
   line(x1, y1, x2, y2, o) { return this.add(Object.assign({ t:"line", x1, y1, x2, y2, w:.3, stroke:"ink" }, o)); }
   rect(x, y, w, h, o) { return this.add(Object.assign({ t:"rect", x, y, w, h, w2:.35, stroke:"ink", fill:"none", r:0 }, o)); }
   poly(pts, o)  { return this.add(Object.assign({ t:"poly", pts, w:.35, stroke:"ink", fill:"none", closed:false }, o)); }
@@ -484,11 +494,14 @@ function bboxOf(els, R) {
       case "dot":  { const r = e.r != null ? e.r : R; acc(e.x - r, e.y - r, e.x + r, e.y + r); break; }
       case "disc": acc(e.x - e.r, e.y - e.r, e.x + e.r, e.y + e.r); break;
       case "text": {
-        const w = e.s.length * e.size * TEXT_W + e.s.length * e.track, h = e.size * .78;
-        if (e.rot) acc(e.x - h, e.y - w / 2, e.x + h, e.y + w / 2);
+        const fam = e.family === "script" ? SCRIPT : SANS;
+        const w = measureW(e.s, e.size, e.weight, fam, e.italic) + e.s.length * e.track;
+        const up = e.baseline === "alpha" ? e.size * .78 : e.size * .55;
+        const dn = e.baseline === "alpha" ? e.size * .24 : e.size * .55;
+        if (e.rot) acc(e.x - Math.max(up, dn), e.y - w / 2, e.x + Math.max(up, dn), e.y + w / 2);
         else {
           const ax = e.anchor === "start" ? 0 : e.anchor === "end" ? -w : -w / 2;
-          acc(e.x + ax, e.y - h, e.x + ax + w, e.y + h);
+          acc(e.x + ax, e.y - up, e.x + ax + w, e.y + dn);
         }
         break; }
       case "line": acc(Math.min(e.x1,e.x2), Math.min(e.y1,e.y2), Math.max(e.x1,e.x2), Math.max(e.y1,e.y2)); break;
@@ -583,7 +596,35 @@ function pixelText(c, glyphs, x, y, u, o) {
    3. Rendu SVG
    ------------------------------------------------------------------ */
 const SANS = "'Avenir Next','Segoe UI',Inter,Helvetica,system-ui,-apple-system,sans-serif";
-const SCRIPT = "'Snell Roundhand','Segoe Script','Brush Script MT','Apple Chancery',cursive";
+/* Une anglaise élégante quand la machine en a une, sinon une italique de
+   labeur qui reste habillée sans en faire trop. Les mesures ci-dessous
+   s'adaptent à celle qui répond réellement. */
+const SCRIPT = "'Snell Roundhand','Apple Chancery','Lucida Calligraphy','Segoe Script',"
+             + "'URW Chancery L',Z003,'Palatino Linotype',Palatino,'Iowan Old Style',Georgia,serif";
+
+/* Mesure via un canvas : largeurs et hauteur de capitale exactes, quelle que
+   soit la police qui a répondu. Sert à centrer et à aligner le titre. */
+let _mctx = null;
+function fontCss(size, weight, family, italic) {
+  return `${italic ? "italic " : ""}${weight || 400} ${size}px ${family}`;
+}
+function measureW(str, size, weight, family, italic) {
+  try {
+    if (!_mctx) _mctx = document.createElement("canvas").getContext("2d");
+    _mctx.font = fontCss(size, weight, family, italic);
+    return _mctx.measureText(str).width;
+  } catch (e) { return str.length * size * .58; }
+}
+/** hauteur de capitale, en fraction du corps */
+function capRatio(family, italic, weight) {
+  try {
+    if (!_mctx) _mctx = document.createElement("canvas").getContext("2d");
+    _mctx.font = fontCss(100, weight, family, italic);
+    const m = _mctx.measureText("P");
+    const a = m.actualBoundingBoxAscent;
+    return a > 20 && a < 130 ? a / 100 : .7;
+  } catch (e) { return .7; }
+}
 const esc = s => String(s).replace(/[&<>]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;" }[c]));
 const n3 = v => Math.round(v * 1000) / 1000;
 
@@ -602,19 +643,24 @@ function renderEls(els, cfg) {
     const op = e.opacity != null ? ` opacity="${e.opacity}"` : "";
     switch (e.t) {
       case "dot": {
-        const st = e.mark || mark, r = e.r != null ? e.r : R;
-        const c = col(e.fill || "ink");
+        let st = e.mark || mark;
+        const r = e.r != null ? e.r : R;
+        const c = e.fill ? col(e.fill) : cfg.tint;
         if (cfg.fills && e.day != null && cfg.fills[e.day]) {   // aperçu rempli, écran seulement
           out.push(`<circle cx="${n3(e.x)}" cy="${n3(e.y)}" r="${n3(r)}" fill="${cfg.fills[e.day]}"/>`);
           break;
         }
-        if (st === "ring")
-          out.push(`<circle${cls} cx="${n3(e.x)}" cy="${n3(e.y)}" r="${n3(r)}" fill="none" stroke="${col("faint")}" stroke-width=".22"${op}/>`);
+        if (st === "num" && e.day == null) st = "dot";          // cases sans jour : point
+        if (st === "num") {
+          const fs = Math.min(r * 1.02, (2 * r * .86) / (String(e.day + 1).length * .58));
+          out.push(`<text${cls} x="${n3(e.x)}" y="${n3(e.y)}" fill="${c}" font-family="${SANS}" font-size="${n3(fs)}" font-weight="600" text-anchor="middle" dominant-baseline="central"${op}>${e.day + 1}</text>`);
+        } else if (st === "ring")
+          out.push(`<circle${cls} cx="${n3(e.x)}" cy="${n3(e.y)}" r="${n3(r)}" fill="none" stroke="${c}" stroke-width=".25"${op}/>`);
         else if (st === "cross") {
           const a = Math.min(r * .42, .8);
           out.push(`<path${cls} d="M${n3(e.x-a)} ${n3(e.y-a)}L${n3(e.x+a)} ${n3(e.y+a)}M${n3(e.x-a)} ${n3(e.y+a)}L${n3(e.x+a)} ${n3(e.y-a)}" stroke="${c}" stroke-width=".3" stroke-linecap="round"${op}/>`);
         } else if (st === "fill")
-          out.push(`<circle${cls} cx="${n3(e.x)}" cy="${n3(e.y)}" r="${n3(r)}" fill="${col("faint")}" fill-opacity=".28" stroke="${col("faint")}" stroke-width=".18"${op}/>`);
+          out.push(`<circle${cls} cx="${n3(e.x)}" cy="${n3(e.y)}" r="${n3(r)}" fill="${c}" fill-opacity=".3" stroke="${c}" stroke-width=".18"${op}/>`);
         else
           out.push(`<circle${cls} cx="${n3(e.x)}" cy="${n3(e.y)}" r="${n3(Math.min(.55, r * .18 + .35))}" fill="${c}"${op}/>`);
         break; }
@@ -626,7 +672,8 @@ function renderEls(els, cfg) {
         const tr = e.rot ? ` transform="rotate(${e.rot} ${n3(e.x)} ${n3(e.y)})"` : "";
         const it = e.italic ? ' font-style="italic"' : "";
         const tk = e.track ? ` letter-spacing="${n3(e.track)}"` : "";
-        out.push(`<text${cls} x="${n3(e.x)}" y="${n3(e.y)}" fill="${col(e.fill)}" font-family="${fam}" font-size="${n3(e.size)}" font-weight="${e.weight}" text-anchor="${e.anchor}" dominant-baseline="central"${tk}${it}${tr}${op}>${esc(e.s)}</text>`);
+        const db = e.baseline === "alpha" ? "" : ' dominant-baseline="central"';
+        out.push(`<text${cls} x="${n3(e.x)}" y="${n3(e.y)}" fill="${col(e.fill)}" font-family="${fam}" font-size="${n3(e.size)}" font-weight="${e.weight}" text-anchor="${e.anchor}"${db}${tk}${it}${tr}${op}>${esc(e.s)}</text>`);
         break; }
       case "line":
         out.push(`<line${cls} x1="${n3(e.x1)}" y1="${n3(e.y1)}" x2="${n3(e.x2)}" y2="${n3(e.y2)}" stroke="${col(e.stroke)}" stroke-width="${n3(e.w)}"${e.dash?` stroke-dasharray="${e.dash}"`:""} stroke-linecap="round"${op}/>`);
@@ -1153,29 +1200,33 @@ function buildHeader(s, design, width, fs) {
   const glyphs = s.pixelTitle ? pixelGlyphs(main) : null;
   const u = size / 6.6;                       // côté d'un pixel du titre
   const capH = glyphs ? 7 * u : size * .72;
-  const wMain = glyphs ? pixelTextWidth(glyphs, u) : main.length * size * .66;
-  const scrSize = glyphs ? capH * 1.42 : size * 1.12;
-  const wScr = script.length * scrSize * .46;
-  const gap = main && script ? capH * .42 : 0;
+  const wMain = glyphs ? pixelTextWidth(glyphs, u)
+                       : measureW(main, size, 800, SANS, false) + main.length * size * .02;
+  // le mot cursif est mis à l'échelle pour que sa capitale fasse la même
+  // hauteur que le mot en pixels, et posé sur la même ligne de base
+  const scrSize = script ? clamp(capH / capRatio(SCRIPT, true, 500), capH, capH * 2.6) : 0;
+  const wScr = script ? measureW(script, scrSize, 500, SCRIPT, true) : 0;
+  const gap = main && script ? capH * .46 : 0;
   const total = wMain + gap + wScr;
   const top = glyphs ? 2 * u : 0;             // deux rangées libres pour les accents
+  const baseY = top + capH;                   // ligne de base commune
 
   let x = width / 2 - total / 2;
   if (main) {
     if (glyphs) pixelText(c, glyphs, x, top, u);
-    else c.txt(x + wMain / 2, top + capH * .5, main, { size, weight: 800, track: size * .02 });
+    else c.txt(x + wMain / 2, baseY, main,
+               { size, weight: 800, track: size * .02, baseline: "alpha" });
     x += wMain + gap;
   }
   if (script)
-    c.txt(x + wScr / 2, top + capH * .62, script,
-          { size: scrSize, weight: 500, family: "script", italic: true });
+    c.txt(x + wScr / 2, baseY, script,
+          { size: scrSize, weight: 500, family: "script", italic: true, baseline: "alpha" });
 
-  const base = top + capH;
   const sub = (s.subtitle || "").trim() || ("· " + design.name.toLowerCase() + " ·");
   const subSize = clamp(capH * .26, 2.4, 5);
-  c.txt(width / 2, base + subSize * 1.7, sub,
+  c.txt(width / 2, baseY + subSize * 1.8, sub,
         { size: subSize, weight: 700, fill: "mute", track: subSize * .3 });
-  return { els: c.els, h: base + subSize * 2.5 };
+  return { els: c.els, h: baseY + subSize * 2.6 };
 }
 
 /** mention Pixel Picole, en pied de planche */
@@ -1387,9 +1438,15 @@ function compose(s) {
            fits, pitch, days, start, end, note: per.note, deco: deco.length, x };
 }
 
+/** gris du repère : 0 = presque effacé, 100 = encre */
+function tintColor(t) {
+  const v = Math.round(220 - (220 - 28) * clamp(+t, 0, 100) / 100);
+  return `rgb(${v},${v},${v})`;
+}
+
 function toSVG(sheet, s, forExport) {
   const pal = makePalette(s);
-  const cfg = { pal, mark: s.mark, R: s.sticker / 2,
+  const cfg = { pal, mark: s.mark, R: s.sticker / 2, tint: tintColor(s.tint),
                 fills: (!forExport && s.preview) ? previewFill(s, sheet.days, s.previewSeed || 1) : null };
   let guides = "";
   if (s.guides) guides = `<rect class="screen-only" x="${n3(s.margin)}" y="${n3(s.margin)}" width="${n3(sheet.page.w-2*s.margin)}" height="${n3(sheet.page.h-2*s.margin)}" fill="none" stroke="${sheet.fits?"#b9c6cf":"#c0524a"}" stroke-width=".25" stroke-dasharray="2 2"/>`;
@@ -1412,7 +1469,7 @@ function defaults() {
     design:"classic", start: isoStr(UTC(t.getFullYear(), t.getMonth(), 1)),
     format:"a3", orient:"landscape", cw:210, ch:297, margin:14,
     sticker:STICKER_STD, gap:GAP_STD, maxSticker:STICKER_STD, maxGap:GAP_STD,
-    mark:"dot", pixel:3,
+    mark:"dot", tint:70, pixel:3,
     theme:"picole", title:"PIXEL Picole", subtitle:"",
     legendOn:true, confetti:true, guides:true, pixelTitle:true,
     preview:false, previewSeed:1,
@@ -1425,6 +1482,7 @@ try {
   if (saved && typeof saved === "object") S = Object.assign(S, saved);
   if (!Array.isArray(S.legend) || !S.legend.length) S.legend = themeLegend("picole");
   if (!(S.pixel > 0)) S.pixel = 3;
+  if (!(S.tint >= 0)) S.tint = 70;
   if (!(S.maxSticker > 0)) S.maxSticker = STICKER_STD;
   if (!(S.maxGap >= 0)) S.maxGap = GAP_STD;
   S.sticker = clamp(S.sticker, 1, S.maxSticker);
@@ -1560,6 +1618,7 @@ function syncInputs() {
   $("#opt-limits").checked = custom || S.showLimits;
   $("#limits").hidden = !$("#opt-limits").checked;
   $("#pixel").value = S.pixel; $("#pixelN").value = S.pixel;
+  $("#tint").value = S.tint; $("#tintN").value = S.tint;
   $("#pixel-size-f").hidden = !S.confetti;
   $("#theme").value = S.theme;
   $("#title").value = S.title; $("#subtitle").value = S.subtitle;
@@ -1607,6 +1666,7 @@ pair("#margin", "#marginN", "margin");
 pair("#sticker", "#stickerN", "sticker");
 pair("#gap", "#gapN", "gap");
 pair("#pixel", "#pixelN", "pixel");
+pair("#tint", "#tintN", "tint");
 
 /* ---------- suggestions quand ça ne rentre pas ---------- */
 function withS(over) { return Object.assign({}, S, over); }
