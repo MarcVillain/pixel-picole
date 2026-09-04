@@ -1,4 +1,16 @@
 <!doctype html>
+<!--
+  Pixel Picole — générateur de planches de suivi à pastilles
+  https://github.com/MarcVillain/pixel-picole
+
+  Copyright 2026 Marc Villain
+  SPDX-License-Identifier: Apache-2.0
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+      http://www.apache.org/licenses/LICENSE-2.0
+-->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -321,16 +333,24 @@ input[type=color]{width:100%;height:30px;padding:2px;border:1px solid var(--line
             <input type="number" id="maxGap" min="0" max="20" step="0.25"></div>
         </div>
         <div class="f">
+          <label>Forme de la pastille</label>
+          <div class="seg" id="shape">
+            <button data-v="circle">Rond</button>
+            <button data-v="square">Carré</button>
+            <button data-v="triangle">Triangle</button>
+          </div>
+        </div>
+        <div class="f">
           <label>Repère imprimé</label>
           <div class="seg" id="mark">
             <button data-v="dot">Point</button>
-            <button data-v="ring">Cercle</button>
-            <button data-v="cross">Croix</button>
+            <button data-v="outline">Contour</button>
             <button data-v="fill">Plein</button>
+            <button data-v="cross">Croix</button>
             <button data-v="num">N°</button>
           </div>
-          <div class="hint">Où coller la pastille. « Point » est discret, « Cercle » sert de gabarit,
-            « N° » numérote les jours de 1 à 365.</div>
+          <div class="hint">Où coller la pastille. « Point » est discret, « Contour » trace la forme
+            à la taille exacte et sert de gabarit, « N° » numérote les jours de 1 à 365.</div>
         </div>
         <div class="f">
           <label for="tint">Gris du repère</label>
@@ -646,26 +666,29 @@ function renderEls(els, cfg) {
         let st = e.mark || mark;
         const r = e.r != null ? e.r : R;
         const c = e.fill ? col(e.fill) : cfg.tint;
+        const sh = cfg.shape;
         if (cfg.fills && e.day != null && cfg.fills[e.day]) {   // aperçu rempli, écran seulement
-          out.push(`<circle cx="${n3(e.x)}" cy="${n3(e.y)}" r="${n3(r)}" fill="${cfg.fills[e.day]}"/>`);
+          out.push(shapeSVG(sh, e.x, e.y, r, `fill="${cfg.fills[e.day]}"`));
           break;
         }
         if (st === "num" && e.day == null) st = "dot";          // cases sans jour : point
         if (st === "num") {
           const fs = Math.min(r * 1.02, (2 * r * .86) / (String(e.day + 1).length * .58));
-          out.push(`<text${cls} x="${n3(e.x)}" y="${n3(e.y)}" fill="${c}" font-family="${SANS}" font-size="${n3(fs)}" font-weight="600" text-anchor="middle" dominant-baseline="central"${op}>${e.day + 1}</text>`);
-        } else if (st === "ring")
-          out.push(`<circle${cls} cx="${n3(e.x)}" cy="${n3(e.y)}" r="${n3(r)}" fill="none" stroke="${c}" stroke-width=".25"${op}/>`);
+          const dy = sh === "triangle" ? r * .18 : 0;           // le triangle a son creux en bas
+          out.push(`<text${cls} x="${n3(e.x)}" y="${n3(e.y + dy)}" fill="${c}" font-family="${SANS}" font-size="${n3(fs)}" font-weight="600" text-anchor="middle" dominant-baseline="central"${op}>${e.day + 1}</text>`);
+        } else if (st === "outline")
+          out.push(shapeSVG(sh, e.x, e.y, r, `${cls} fill="none" stroke="${c}" stroke-width=".25"${op}`));
         else if (st === "cross") {
           const a = Math.min(r * .42, .8);
           out.push(`<path${cls} d="M${n3(e.x-a)} ${n3(e.y-a)}L${n3(e.x+a)} ${n3(e.y+a)}M${n3(e.x-a)} ${n3(e.y+a)}L${n3(e.x+a)} ${n3(e.y-a)}" stroke="${c}" stroke-width=".3" stroke-linecap="round"${op}/>`);
         } else if (st === "fill")
-          out.push(`<circle${cls} cx="${n3(e.x)}" cy="${n3(e.y)}" r="${n3(r)}" fill="${c}" fill-opacity=".3" stroke="${c}" stroke-width=".18"${op}/>`);
+          out.push(shapeSVG(sh, e.x, e.y, r, `${cls} fill="${c}" fill-opacity=".3" stroke="${c}" stroke-width=".18"${op}`));
         else
           out.push(`<circle${cls} cx="${n3(e.x)}" cy="${n3(e.y)}" r="${n3(Math.min(.55, r * .18 + .35))}" fill="${c}"${op}/>`);
         break; }
       case "disc":
-        out.push(`<circle${cls} cx="${n3(e.x)}" cy="${n3(e.y)}" r="${n3(e.r)}" fill="${col(e.fill)}" stroke="${col(e.stroke)}" stroke-width="${n3(e.w)}"${op}/>`);
+        out.push(shapeSVG(e.shape === false ? "circle" : cfg.shape, e.x, e.y, e.r,
+                          `${cls} fill="${col(e.fill)}" stroke="${col(e.stroke)}" stroke-width="${n3(e.w)}"${op}`));
         break;
       case "text": {
         const fam = e.family === "script" ? SCRIPT : SANS;
@@ -790,12 +813,12 @@ const SEASON_MARKS = {
   fleur(c, x, y, r) {
     for (let i = 0; i < 6; i++) {
       const a = i * Math.PI / 3;
-      c.disc(x + Math.cos(a) * r * .58, y + Math.sin(a) * r * .58, r * .38, { fill:"ink" });
+      c.disc(x + Math.cos(a) * r * .58, y + Math.sin(a) * r * .58, r * .38, { fill:"ink", shape:false });
     }
-    c.disc(x, y, r * .3, { fill:"paper", stroke:"ink", w: .3 });
+    c.disc(x, y, r * .3, { fill:"paper", stroke:"ink", w: .3, shape:false });
   },
   soleil(c, x, y, r) {
-    c.disc(x, y, r * .46, { fill:"ink" });
+    c.disc(x, y, r * .46, { fill:"ink", shape:false });
     for (let i = 0; i < 8; i++) {
       const a = i * Math.PI / 4;
       c.line(x + Math.cos(a) * r * .68, y + Math.sin(a) * r * .68,
@@ -904,7 +927,7 @@ function seasonBlock(x, season, frame, forceYearW) {
     draw(c, ox, oy) {
       const gx = ox + lw, gy = oy + headH;
       const starX = gx + 7 * P + gapS + P / 2;
-      const starMark = x.mark === "dot" ? "cross" : x.mark;
+      const starMark = x.mark === "dot" ? "cross" : x.mark;   // le bilan se coche
 
       for (let i = 0; i < 7; i++)
         c.txt(gx + P / 2 + i * P, gy - fs * .62, DAY_LETTER[i], { size: fs * 1.05, weight: 800 });
@@ -1438,6 +1461,22 @@ function compose(s) {
            fits, pitch, days, start, end, note: per.note, deco: deco.length, x };
 }
 
+/* ------------------------------------------------------------------
+   Formes de pastille. Le « diamètre » réglé dans le panneau est toujours
+   l'encombrement de la pastille : côté du carré, largeur du triangle,
+   diamètre du rond. Une case reste donc carrée quelle que soit la forme.
+   ------------------------------------------------------------------ */
+function shapeSVG(shape, x, y, r, attrs) {
+  if (shape === "square")
+    return `<rect x="${n3(x - r)}" y="${n3(y - r)}" width="${n3(2 * r)}" height="${n3(2 * r)}" rx="${n3(r * .1)}" ${attrs}/>`;
+  if (shape === "triangle") {
+    const h = r * Math.sqrt(3);                       // côté 2r, hauteur r√3
+    const d = `M${n3(x)} ${n3(y - h * 2 / 3)}L${n3(x + r)} ${n3(y + h / 3)}L${n3(x - r)} ${n3(y + h / 3)}Z`;
+    return `<path d="${d}" stroke-linejoin="round" ${attrs}/>`;
+  }
+  return `<circle cx="${n3(x)}" cy="${n3(y)}" r="${n3(r)}" ${attrs}/>`;
+}
+
 /** gris du repère : 0 = presque effacé, 100 = encre */
 function tintColor(t) {
   const v = Math.round(220 - (220 - 28) * clamp(+t, 0, 100) / 100);
@@ -1446,7 +1485,7 @@ function tintColor(t) {
 
 function toSVG(sheet, s, forExport) {
   const pal = makePalette(s);
-  const cfg = { pal, mark: s.mark, R: s.sticker / 2, tint: tintColor(s.tint),
+  const cfg = { pal, mark: s.mark, shape: s.shape || "circle", R: s.sticker / 2, tint: tintColor(s.tint),
                 fills: (!forExport && s.preview) ? previewFill(s, sheet.days, s.previewSeed || 1) : null };
   let guides = "";
   if (s.guides) guides = `<rect class="screen-only" x="${n3(s.margin)}" y="${n3(s.margin)}" width="${n3(sheet.page.w-2*s.margin)}" height="${n3(sheet.page.h-2*s.margin)}" fill="none" stroke="${sheet.fits?"#b9c6cf":"#c0524a"}" stroke-width=".25" stroke-dasharray="2 2"/>`;
@@ -1469,7 +1508,7 @@ function defaults() {
     design:"classic", start: isoStr(UTC(t.getFullYear(), t.getMonth(), 1)),
     format:"a3", orient:"landscape", cw:210, ch:297, margin:14,
     sticker:STICKER_STD, gap:GAP_STD, maxSticker:STICKER_STD, maxGap:GAP_STD,
-    mark:"dot", tint:70, pixel:3,
+    shape:"circle", mark:"dot", tint:70, pixel:3,
     theme:"picole", title:"PIXEL Picole", subtitle:"",
     legendOn:true, confetti:true, guides:true, pixelTitle:true,
     preview:false, previewSeed:1,
@@ -1483,6 +1522,8 @@ try {
   if (!Array.isArray(S.legend) || !S.legend.length) S.legend = themeLegend("picole");
   if (!(S.pixel > 0)) S.pixel = 3;
   if (!(S.tint >= 0)) S.tint = 70;
+  if (!["circle","square","triangle"].includes(S.shape)) S.shape = "circle";
+  if (S.mark === "ring") S.mark = "outline";                  // ancien nom
   if (!(S.maxSticker > 0)) S.maxSticker = STICKER_STD;
   if (!(S.maxGap >= 0)) S.maxGap = GAP_STD;
   S.sticker = clamp(S.sticker, 1, S.maxSticker);
@@ -1631,6 +1672,7 @@ function syncInputs() {
   $("#preview-note").hidden = !S.preview;
   $("#orient").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === S.orient));
   $("#mark").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === S.mark));
+  $("#shape").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === S.shape));
 }
 
 $("#start").onchange = e => { S.start = e.target.value || S.start; syncInputs(); render(); };
@@ -1662,6 +1704,7 @@ $("#maxGap").oninput = e => {
 };
 seg("#orient", "orient");
 seg("#mark", "mark");
+seg("#shape", "shape");
 pair("#margin", "#marginN", "margin");
 pair("#sticker", "#stickerN", "sticker");
 pair("#gap", "#gapN", "gap");

@@ -108,13 +108,20 @@ un A4**. Le générateur le dit franchement plutôt que de rétrécir en douce, 
 propose en un clic le format qui convient — le plus petit qui passe quand il reste
 trop de blanc, le format au-dessus quand ça déborde.
 
-### Les repères
+### Formes et repères
 
-Chaque case porte un repère imprimé, qui dit où coller sans se voir une fois la
-pastille posée. Cinq formes : **point** (discret, par défaut), **cercle** (gabarit
-au diamètre exact), **croix**, **plein** (à colorier au crayon) et **N°**, qui
-numérote les jours de 1 à 365 à partir de ta date de début — pratique pour
-retrouver un jour précis, ou pour tenir un carnet en regard.
+Deux réglages, parce que ce sont deux choses différentes.
+
+La **forme** est celle de tes gommettes : rond, carré ou triangle. Elle vaut pour
+toute la planche, légende comprise. Le diamètre réglé plus haut est toujours
+l'encombrement — côté du carré, largeur du triangle, diamètre du rond — donc la
+case reste carrée et l'entraxe ne bouge pas.
+
+Le **repère** est ce qui s'imprime dans la case pour dire où coller : **point**
+(discret, par défaut), **contour** (la forme tracée à la taille exacte, un
+gabarit), **plein** (à colorier au crayon), **croix**, et **N°**, qui numérote les
+jours de 1 à 365 à partir de ta date de début — pratique pour retrouver un jour
+précis, ou pour tenir un carnet en regard.
 
 Un curseur règle leur **gris**, de l'encre au presque effacé. Un repère clair
 disparaît sous la gommette ; un repère foncé se lit à distance quand la planche
@@ -253,10 +260,21 @@ description.
 
 La période réellement couverte est toujours affichée sous la date de début.
 
+## Licence
+
+[Apache License 2.0](LICENSE) — voir aussi [`NOTICE`](NOTICE).
+
+Apache plutôt que MIT pour deux raisons qui comptent ici. Elle **oblige à
+conserver les mentions de copyright** dans les copies et les versions dérivées,
+ce qui va de pair avec le pied de planche imprimé sur chaque feuille. Et son
+article 6 **ne concède aucun droit sur le nom ni la marque** : le code se
+réutilise et se modifie librement, mais une version dérivée se publie sous un
+autre nom. Pixel Picole reste Pixel Picole.
+
 ---
 
 <div align="center">
 
-© Pixel Picole
+© 2026 Pixel Picole
 
 </div>
