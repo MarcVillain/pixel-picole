@@ -1653,6 +1653,10 @@ document.addEventListener("click", e => {
     const o = S.opts[S.design];
     if (o) delete o[b.dataset.opt];
     buildDesignOptions();
+  } else if (b.dataset.k === "theme") {
+    // choisir un thème écrit aussi le titre et les pastilles, donc y revenir
+    // doit refaire le même geste, pas seulement remettre le sélecteur
+    applyTheme(D.theme);
   } else {
     const k = b.dataset.k;
     S[k] = JSON.parse(JSON.stringify(D[k]));
@@ -1752,16 +1756,15 @@ $("#titleFont").onchange = e => { S.titleFont = e.target.value; syncInputs(); re
 $("#theme").innerHTML = THEME_ORDER
   .map(k => `<option value="${k}">${esc(THEMES[k].label)}${k === "picole" ? " · défaut" : ""}</option>`).join("")
   + `<option value="custom">Sur mesure, je remplis moi-même</option>`;
-$("#theme").onchange = e => {
-  const k = e.target.value;
+function applyTheme(k) {
   S.theme = k;
   if (THEMES[k]) {
     S.title = "PIXEL " + THEMES[k].word;
     S.legend = themeLegend(k);
     buildLegendEditor();
   }
-  syncInputs(); render();
-};
+}
+$("#theme").onchange = e => { applyTheme(e.target.value); syncInputs(); render(); };
 
 $("#format").innerHTML = FORMAT_ORDER.map(k => `<option value="${k}">${esc(FORMATS[k].name)}</option>`).join("");
 
