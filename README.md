@@ -6,14 +6,14 @@
 
 **One year, one cell per day, one sticker.**
 
-A generator for printable tracker sheets. Single HTML file, no dependencies.
+Printable tracker sheets. A single HTML file with no dependencies.
 
-<img src="assets/classic.png" width="88%" alt="Classic sheet, filled preview">
+<img src="assets/classic.png" width="88%" alt="Classic sheet">
 
-<img src="assets/4-saisons.png" width="43%" alt="4 Saisons sheet, filled preview">
-<img src="assets/spirale.png" width="43%" alt="Spirale sheet, filled preview">
+<img src="assets/4-saisons.png" width="43%" alt="4 Saisons sheet">
+<img src="assets/spirale.png" width="43%" alt="Spirale sheet">
 
-*The sheets print empty. Shown here with the filled preview.*
+*Sheets print empty. Shown here with the filled preview.*
 
 </div>
 
@@ -23,46 +23,34 @@ A generator for printable tracker sheets. Single HTML file, no dependencies.
 
 A wall tracker is a logbook, not a goal.
 
-You stick one sticker a day and write nothing down. After a couple of months the
-wall starts talking. Fridays stand out. Heavy weeks at work stand out. That trip
-in March stands out. Nobody had to record any of it.
+Stick one sticker a day and write nothing down. After a couple of months the wall
+starts talking. Fridays stand out. Heavy weeks at work stand out. That trip in
+March stands out.
 
-Real goals come from there. From a pattern you watched appear and now want to
-move.
+Goals come from there, from a pattern you watched appear and now want to move.
 
-Three rules hold the project together.
-
-- A cell is information, not a verdict.
-- The words matter. The stickers are called CHILL, TCHIN, PARTY. You name what
-  happened, the way you would to a friend. Everything is editable so the words on
-  your wall are yours.
+- A cell records what happened. Nothing more.
+- Name it the way you would to a friend. CHILL, TCHIN, PARTY. Every label is
+  yours to change.
 - Ten seconds a day. A ritual that asks for more stops within weeks.
 
-It works both ways. A grid of days has nothing to do with alcohol. Track what you
-want to see shrink, or what you want to see grow.
-
-## The tool
-
-Everything lives in `index.html`. No dependencies, no build, no network, no
-account. Open it in a browser, set it up, print. Nothing to install and nothing
-to update.
-
-The interface is in French. Every label on the sheet is editable, so translating
-your own sheet takes a minute.
+A grid of days has nothing to do with alcohol. Track what you want to see shrink,
+or what you want to see grow.
 
 ## Using it
 
-<img src="assets/app.png" width="100%" alt="The generator interface">
+<img src="assets/app.png" width="100%" alt="The generator">
 
-Pick an edition, a start date, a paper size and a sticker shape. The filled
-preview draws a plausible year so you can judge the colours before buying
-anything. Print at full size, or export SVG.
+Open `index.html` in a browser. Pick an edition, a start date, a paper size and a
+sticker shape. The filled preview draws a plausible year so you can judge the
+colours before buying anything. Print at full size, or export SVG.
 
-Settings stay in your browser.
+Settings stay in your browser. The interface is in French, and every label on the
+sheet is editable.
 
 ### Editions
 
-| Edition | What you read on it |
+| | |
 | --- | --- |
 | **Classic** | The whole year in one grid. Streaks jump out. |
 | **4 Saisons** | Weeks grouped by season, with a column to rate each week. |
@@ -71,42 +59,25 @@ Settings stay in your browser.
 
 ### Stickers
 
-The grid is built around stationery stickers, so the cell size has a ceiling
-rather than a target. Below it you are free. Above it a sticker floats in its
-cell and the grid goes slack. One switch lifts the limits if you use something
-else.
+Cells are capped at the size of a stationery sticker. Smaller is free, larger is
+not. One switch raises the cap for other sticker sizes.
 
-Since the cell cannot grow, the paper adapts to the grid. Some editions will not
-fit on smaller sheets. The generator says so and offers a size that works.
+The paper follows the grid, so some editions will not fit on smaller sheets. The
+generator says so and offers a size that works.
 
-Round, square and triangle stickers are all supported, and the printed guide can
-be a dot, an outline, a filled shape, a cross, or the day number.
+Round, square and triangle stickers. The printed guide can be a dot, an outline,
+a filled shape, a cross or the day number, in any shade of grey.
 
 ### Themes
 
-Pixel Picole is the default. A small selector fills in the title and stickers for
-other subjects: screens, series, exercise, sleep, cooking, intimacy, mood. They
-are starting points. Change the names, the colours and the notes, add or remove
-stickers.
+Pixel Picole is the default. A selector fills in the title and stickers for other
+subjects: screens, series, exercise, sleep, cooking, intimacy, mood. Rename,
+recolour, add or remove stickers from there.
 
 ## Publishing
 
-The repo carries a Pages workflow. Enable Pages with GitHub Actions as the
-source, then push. Any static host works, and so does sending someone the file.
-
-## Contributing
-
-New editions and layout fixes are the most useful contributions.
-
-- No dependencies and no build step. An idea that needs npm belongs in another
-  project.
-- The engine works in millimetres. A sheet prints at true scale or it does not
-  print.
-- Test across start dates. Leap years and mid-month starts are where it breaks.
-  Every day of the period must land in exactly one cell.
-- Keep the wording kind. No shaming language in labels, themes or the interface.
-
-Code and comments are in French, in numbered sections.
+Enable Pages with GitHub Actions as the source, then push. The workflow is in the
+repo. Any static host works, and so does sending someone the file.
 
 ## Adding an edition
 
@@ -137,19 +108,26 @@ registerDesign({
 
 The context hands you the period, the cell pitch, the sticker radius, a base font
 size and your option values. Primitives are `dot`, `txt`, `line`, `rect`, `poly`
-and `disc`, and colours are logical names. Tag each cell with its day index and
-the filled preview works for free.
+and `disc`. Colours are logical names. Tagging a cell with its day index enables
+the filled preview.
 
-The four existing editions cover most of what you would need to copy. A new one
-shows up in the picker on its own.
+New editions appear in the picker on their own. The four existing ones are the
+reference.
+
+## Contributing
+
+- No dependencies and no build step.
+- The engine works in millimetres. A sheet prints at true scale or it does not
+  print.
+- Test across start dates. Leap years and mid-month starts are where it breaks.
+  Every day of the period must land in exactly one cell.
+- Keep the wording kind. No shaming language in labels, themes or the interface.
+
+Code and comments are in French.
 
 ## Licence
 
 Apache 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
-
-Apache rather than MIT for two reasons. It requires copyright notices to be kept
-in copies and derivatives, which matches the footer printed on every sheet. And
-it grants no rights over the name, so a fork ships under its own.
 
 ---
 
