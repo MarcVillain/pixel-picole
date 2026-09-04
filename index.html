@@ -154,14 +154,20 @@ input[type=color]{width:100%;height:30px;padding:2px;border:1px solid var(--line
 .sw input:focus-visible + i{box-shadow:0 0 0 3px color-mix(in oklab,var(--accent) 22%,transparent)}
 
 /* légende éditable */
-.leg-row{display:grid;grid-template-columns:34px 1fr 62px;gap:7px;margin-bottom:7px;align-items:center}
+.leg-row{display:grid;grid-template-columns:30px minmax(0,1fr) 72px 26px;gap:6px;margin-bottom:7px;align-items:center}
 .leg-row input[type=text]{padding:6px 8px;font-size:12px}
-details.fold{border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--panel-2);margin-bottom:12px;overflow:hidden}
-details.fold>summary{padding:9px 12px;cursor:pointer;font-size:12px;font-weight:600;color:var(--ink-2);list-style:none;display:flex;align-items:center;gap:7px}
-details.fold>summary::-webkit-details-marker{display:none}
-details.fold>summary::before{content:"›";display:inline-block;transition:.2s var(--ease);font-size:16px;line-height:1;color:var(--ink-3)}
-details.fold[open]>summary::before{transform:rotate(90deg)}
-details.fold .fold-body{padding:4px 12px 12px}
+.leg-row .del{border:1px solid var(--line);background:var(--panel-2);border-radius:7px;height:30px;cursor:pointer;
+  color:var(--ink-3);font-size:15px;line-height:1;transition:.16s var(--ease);padding:0}
+.leg-row .del:hover{color:var(--tchin);border-color:var(--tchin)}
+.leg-row .del:disabled{opacity:.3;cursor:not-allowed}
+.leg-add{width:100%;padding:7px;border:1px dashed var(--line-2);background:transparent;border-radius:var(--radius-sm);
+  cursor:pointer;font-size:12px;font-weight:600;color:var(--ink-2);transition:.16s var(--ease)}
+.leg-add:hover{border-color:var(--accent);color:var(--accent)}
+.note{font-size:11px;line-height:1.45;padding:8px 10px;border-radius:var(--radius-sm);margin:2px 0 12px}
+.note.good{background:color-mix(in oklab,var(--chill) 13%,transparent);color:var(--ink-2)}
+.note.warn{background:color-mix(in oklab,var(--party) 20%,transparent);color:var(--ink-2)}
+.note b{color:var(--ink)}
+.note .chip{margin-top:7px;display:inline-block}
 
 /* ---------- statut ---------- */
 .status{
@@ -242,7 +248,7 @@ details.fold .fold-body{padding:4px 12px 12px}
         <h1>Pixel <em>Picole</em></h1>
         <p>Générateur de trackers à stickers</p>
       </div>
-      <button class="theme-btn" id="theme" title="Thème clair / sombre" aria-label="Basculer le thème">◐</button>
+      <button class="theme-btn" id="skin" title="Apparence claire / sombre" aria-label="Basculer l'apparence">◐</button>
     </div>
 
     <div class="side-scroll">
@@ -300,13 +306,13 @@ details.fold .fold-body{padding:4px 12px 12px}
           </div>
         </div>
         <div class="f">
-          <label for="gap">Espace minimum entre stickers (mm)</label>
+          <label for="gap">Espace entre stickers (mm)</label>
           <div class="slider">
-            <input type="range" id="gap" min="0" max="10" step="0.5">
-            <div class="val"><input type="number" id="gapN" min="0" max="10" step="0.5"></div>
+            <input type="range" id="gap" min="1" max="10" step="0.5">
+            <div class="val"><input type="number" id="gapN" min="1" max="10" step="0.5"></div>
           </div>
-          <div class="hint" id="pitch-hint"></div>
         </div>
+        <div class="note" id="pitch-note"></div>
         <div class="f">
           <label>Repère imprimé</label>
           <div class="seg" id="mark">
@@ -326,14 +332,28 @@ details.fold .fold-body{padding:4px 12px 12px}
           <div class="f"><label for="subtitle">Sous-titre</label><input type="text" id="subtitle" maxlength="28"></div>
         </div>
         <label class="sw"><input type="checkbox" id="opt-legend"><i></i><span>Afficher la légende</span></label>
-        <label class="sw"><input type="checkbox" id="opt-confetti"><i></i><span>Confettis pixel autour du titre</span></label>
+        <label class="sw"><input type="checkbox" id="opt-confetti"><i></i><span>Décor pixel autour de la planche</span></label>
+        <div class="f" id="pixel-size-f">
+          <label for="pixel">Côté des carrés pixel (mm)</label>
+          <div class="slider">
+            <input type="range" id="pixel" min="2" max="14" step="1">
+            <div class="val"><input type="number" id="pixelN" min="2" max="14" step="1"></div>
+          </div>
+        </div>
         <label class="sw"><input type="checkbox" id="opt-guides"><i></i><span>Repères de marge (écran seulement)</span></label>
         <div id="design-options"></div>
+      </section>
 
-        <details class="fold">
-          <summary>Légende — libellés &amp; couleurs</summary>
-          <div class="fold-body" id="legend-editor"></div>
-        </details>
+      <section class="sec">
+        <h2>Pastilles <span></span></h2>
+        <div id="legend-editor"></div>
+        <button class="leg-add" id="leg-add">+ Ajouter une pastille</button>
+        <div class="f" style="margin-top:14px">
+          <label for="theme">Partir d'un thème</label>
+          <select id="theme"></select>
+          <div class="hint">Remplit le titre et les pastilles. Tout reste modifiable ensuite —
+            couleur, nom, description.</div>
+        </div>
       </section>
 
       <div class="status" id="status"></div>
@@ -630,11 +650,52 @@ registerDesign({
 });
 
 /* ---------- 4.2 4 SAISONS : semaines ISO groupées par saison ---------- */
+/* Les vignettes de saison sont dessinées en vectoriel : aucune police de
+   symboles à charger, donc un rendu identique à l'écran, à l'impression et
+   dans le SVG exporté. */
+const SEASON_MARKS = {
+  fleur(c, x, y, r) {
+    for (let i = 0; i < 6; i++) {
+      const a = i * Math.PI / 3;
+      c.disc(x + Math.cos(a) * r * .58, y + Math.sin(a) * r * .58, r * .38, { fill:"ink" });
+    }
+    c.disc(x, y, r * .3, { fill:"paper", stroke:"ink", w: .3 });
+  },
+  soleil(c, x, y, r) {
+    c.disc(x, y, r * .46, { fill:"ink" });
+    for (let i = 0; i < 8; i++) {
+      const a = i * Math.PI / 4;
+      c.line(x + Math.cos(a) * r * .68, y + Math.sin(a) * r * .68,
+             x + Math.cos(a) * r, y + Math.sin(a) * r, { w: .32 });
+    }
+  },
+  feuille(c, x, y, r) {
+    const a = -Math.PI / 4, ca = Math.cos(a), sa = Math.sin(a);
+    const to = (u, v) => [x + u * ca - v * sa, y + u * sa + v * ca];
+    const pts = [];
+    for (let i = 0; i <= 14; i++) { const t = i / 14; pts.push(to((2 * t - 1) * r, Math.sin(Math.PI * t) * r * .45)); }
+    for (let i = 14; i >= 0; i--) { const t = i / 14; pts.push(to((2 * t - 1) * r, -Math.sin(Math.PI * t) * r * .45)); }
+    c.poly(pts, { closed: true, w: .32 });
+    c.line(to(-r, 0)[0], to(-r, 0)[1], to(r, 0)[0], to(r, 0)[1], { w: .28 });
+  },
+  flocon(c, x, y, r) {
+    for (let i = 0; i < 3; i++) {
+      const a = i * Math.PI / 3, dx = Math.cos(a) * r, dy = Math.sin(a) * r;
+      c.line(x - dx, y - dy, x + dx, y + dy, { w: .32 });
+      for (const sg of [1, -1]) {
+        const px = x + dx * sg * .62, py = y + dy * sg * .62;
+        for (const t of [2.5, -2.5])
+          c.line(px, py, px + Math.cos(a + t) * r * .34, py + Math.sin(a + t) * r * .34, { w: .3 });
+      }
+    }
+  }
+};
+
 const SEASONS = [
-  { name:"PRINTEMPS", glyph:"✿", weeks: range(9, 21) },
-  { name:"ÉTÉ",       glyph:"☀", weeks: range(22, 35) },
-  { name:"AUTOMNE",   glyph:"❦", weeks: range(36, 48) },
-  { name:"HIVER",     glyph:"❄", weeks: range(49, 53).concat(range(1, 8)) }
+  { name:"PRINTEMPS", mark:"fleur",   weeks: range(9, 21) },
+  { name:"ÉTÉ",       mark:"soleil",  weeks: range(22, 35) },
+  { name:"AUTOMNE",   mark:"feuille", weeks: range(36, 48) },
+  { name:"HIVER",     mark:"flocon",  weeks: range(49, 53).concat(range(1, 8)) }
 ];
 
 /** Répartit chaque jour de la période dans une case (semaine ISO, jour).
@@ -762,8 +823,7 @@ function seasonBlock(x, season, frame, forceYearW) {
       const bh = rws.length * P;
       c.txt(gx + gridW + nameW * .42, gy + bh * .34, season.name,
             { rot: 90, size: fs * 1.9, weight: 800, track: fs * .06 });
-      c.txt(gx + gridW + nameW * .42, gy + bh * .78, season.glyph,
-            { size: fs * 2.2, weight: 400 });
+      SEASON_MARKS[season.mark](c, gx + gridW + nameW * .45, gy + bh * .8, fs * 1.5);
     }
   };
 }
@@ -805,9 +865,10 @@ registerDesign({
     const yw = Math.max.apply(null, probe.map(b => b.yearW));
     const blocks = SEASONS.map(s => seasonBlock(x, s, frame, yw));
     const gx = x.pitch * 2.0, gy = x.pitch * 2.2;
-    const cw = [Math.max(blocks[0].w, blocks[2].w), Math.max(blocks[1].w, blocks[3].w)];
-    const rh = [Math.max(blocks[0].h, blocks[1].h), Math.max(blocks[2].h, blocks[3].h)];
-    const at = [[0, 0], [cw[0] + gx, 0], [0, rh[0] + gy], [cw[0] + gx, rh[0] + gy]];
+    // colonne gauche : printemps + été ; colonne droite : automne + hiver
+    const cw = [Math.max(blocks[0].w, blocks[1].w), Math.max(blocks[2].w, blocks[3].w)];
+    const rh = [Math.max(blocks[0].h, blocks[2].h), Math.max(blocks[1].h, blocks[3].h)];
+    const at = [[0, 0], [0, rh[0] + gy], [cw[0] + gx, 0], [cw[0] + gx, rh[0] + gy]];
     blocks.forEach((b, i) => b.draw(c, at[i][0], at[i][1]));
   }
 });
@@ -896,20 +957,35 @@ registerDesign({
       pos.push([r * Math.sin(th), -r * Math.cos(th), th, r]);
       th += P / r;                               // avance d'un entraxe d'arc
     }
-    if (o.ticks) days.forEach((dt, i) => {
-      if (dt.getUTCDate() !== 1 && i !== 0) return;
-      const [px, py, a, rr] = pos[i];
-      const ux = Math.sin(a), uy = -Math.cos(a);
-      const t0 = x.R + .8, t1 = x.R + P * .55;
-      c.line(px + ux * t0, py + uy * t0, px + ux * t1, py + uy * t1, { w: .3, stroke: "mute" });
-      const deg = a * 180 / Math.PI;
-      const flip = ((deg % 360) + 360) % 360 > 180;
-      const lx = px + ux * (t1 + fs * 1.5), ly = py + uy * (t1 + fs * 1.5);
-      const showYear = dt.getUTCMonth() === 0 || i === 0;
-      const label = MONTH_SHORT[dt.getUTCMonth()] + (showYear ? " " + String(dt.getUTCFullYear()).slice(2) : "");
-      c.txt(lx, ly, label,
-            { size: fs * .9, weight: 800, fill: "mute", rot: flip ? deg + 90 : deg - 90 });
-    });
+    // Repères de mois. Deux mois voisins peuvent tomber sur le même rayon à
+    // un tour d'écart : on décale alors le libellé le long de la spirale
+    // jusqu'à ce qu'il ne touche plus le précédent.
+    if (o.ticks) {
+      const placed = [];
+      const minGap = fs * 2.8;
+      const tries = [[0, 0], [0, .10], [0, -.10], [.9, 0], [0, .20], [0, -.20], [1.8, 0]];
+      days.forEach((dt, i) => {
+        if (dt.getUTCDate() !== 1 && i !== 0) return;
+        const [px, py, a, rr] = pos[i];
+        const ux = Math.sin(a), uy = -Math.cos(a);
+        const t0 = x.R + .8, t1 = x.R + P * .55;
+        c.line(px + ux * t0, py + uy * t0, px + ux * t1, py + uy * t1, { w: .3, stroke: "mute" });
+        let best = null;
+        for (const [dr, da] of tries) {
+          const ang = a + da, off = t1 + fs * (1.5 + dr);
+          const bx = (rr + off) * Math.sin(ang), by = -(rr + off) * Math.cos(ang);
+          best = best || [bx, by, ang];
+          if (placed.every(q => Math.hypot(q[0] - bx, q[1] - by) >= minGap)) { best = [bx, by, ang]; break; }
+        }
+        placed.push(best);
+        const deg = best[2] * 180 / Math.PI;
+        const flip = ((deg % 360) + 360) % 360 > 180;
+        const showYear = dt.getUTCMonth() === 0 || i === 0;
+        const label = MONTH_SHORT[dt.getUTCMonth()] + (showYear ? " " + String(dt.getUTCFullYear()).slice(2) : "");
+        c.txt(best[0], best[1], label,
+              { size: fs * .9, weight: 800, fill: "mute", rot: flip ? deg + 90 : deg - 90 });
+      });
+    }
     pos.forEach(p => c.dot(p[0], p[1]));   // les points passent par-dessus les libellés
 
     if (o.core) {
@@ -919,6 +995,35 @@ registerDesign({
     }
   }
 });
+
+/* ------------------------------------------------------------------
+   4.5 Thèmes
+   ------------------------------------------------------------------
+   Un thème ne fait que pré-remplir le mot du titre et les pastilles.
+   Tout reste modifiable ensuite. Pixel Picole reste la marque de
+   l'outil, quel que soit le thème choisi.
+   ------------------------------------------------------------------ */
+const HUE = { eau:"#7fb2c0", miel:"#e3b84b", brique:"#c0524a", encre:"#2b2b2b", menthe:"#6fae8f", ardoise:"#6b7f8c" };
+const THEMES = {
+  picole:  { word:"Picole",  label:"Picole — verres",            legend:[
+    ["CHILL","0",HUE.eau], ["TCHIN","1–2",HUE.brique], ["DÉRAPAGE","3+",HUE.encre], ["PARTY","soirée",HUE.miel]] },
+  ecrans:  { word:"Écrans",  label:"Écrans — réseaux, téléphone", legend:[
+    ["AU VERT","0",HUE.menthe], ["TRANQUILLE","< 1 h",HUE.eau], ["SCROLL","1–3 h",HUE.miel], ["GRANDE SESSION","3 h +",HUE.brique]] },
+  series:  { word:"Séries",  label:"Séries — films, vidéos",      legend:[
+    ["JOURNÉE SANS","0",HUE.menthe], ["UN ÉPISODE","1",HUE.eau], ["SOIRÉE","2–3",HUE.miel], ["MARATHON","4 +",HUE.brique]] },
+  bouge:   { word:"Bouge",   label:"Bouge — activité physique",   legend:[
+    ["REPOS","0",HUE.eau], ["MARCHE","~ 30 min",HUE.menthe], ["SÉANCE","~ 1 h",HUE.miel], ["GRAND JOUR","2 h +",HUE.brique]] },
+  dodo:    { word:"Dodo",    label:"Dodo — sommeil",              legend:[
+    ["COURTE","< 6 h",HUE.brique], ["MOYENNE","6–7 h",HUE.miel], ["BONNE","7–8 h",HUE.eau], ["AU TOP","8 h +",HUE.menthe]] },
+  popote:  { word:"Popote",  label:"Popote — cuisine maison",     legend:[
+    ["SUR LE POUCE","0",HUE.eau], ["MAISON","1",HUE.menthe], ["GRANDE TABLÉE","2 +",HUE.miel], ["NOUVELLE RECETTE","★",HUE.brique]] },
+  plaisir: { word:"Plaisir", label:"Plaisir — intimité",          legend:[
+    ["CALME","0",HUE.eau], ["SOLO","1",HUE.miel], ["À DEUX","2",HUE.brique], ["PLUS","3 +",HUE.encre]] },
+  humeur:  { word:"Humeur",  label:"Humeur — comment ça va",      legend:[
+    ["JOUR DUR","",HUE.ardoise], ["ÇA VA","",HUE.eau], ["BONNE","",HUE.miel], ["LUMINEUSE","",HUE.menthe]] }
+};
+const THEME_ORDER = ["picole","ecrans","series","bouge","dodo","popote","plaisir","humeur"];
+const themeLegend = id => THEMES[id].legend.map(l => ({ label:l[0], hint:l[1], color:l[2] }));
 
 /* ------------------------------------------------------------------
    5. Formats de papier (mm, en portrait)
@@ -966,22 +1071,56 @@ function buildHeader(s, design, width, fs) {
   if (script) c.txt(x + wScr / 2, y * 1.05, script, { size: size * 1.12, weight: 500, family: "script", italic: true });
   const sub = (s.subtitle || "").trim() || ("· " + design.name.toLowerCase() + " ·");
   const subSize = clamp(size * .28, 2.4, 5);
-  c.txt(width / 2, size * 1.32, sub, { size: subSize, weight: 700, fill: "mute", track: subSize * .22 });
-  const h = size * 1.32 + subSize;
+  c.txt(width / 2, size * 1.34, sub, { size: subSize, weight: 700, fill: "mute", track: subSize * .22 });
+  return { els: c.els, h: size * 1.34 + subSize };
+}
 
-  if (s.confetti) {                       // petits pixels dispersés, façon original
-    const R = rng(1337 + main.length * 7 + width | 0);
-    const halo = size * .9;
-    for (let i = 0; i < 22; i++) {
-      const side = i % 2 ? 1 : -1;
-      const cx = width / 2 + side * (total / 2 + halo * (.25 + R() * 2.6));
-      const cy = h * (.08 + R() * .95) - size * .2;
-      const sz = size * (.055 + R() * .075);
-      if (cx < 0 || cx + sz > width) continue;   // on reste dans la largeur de la grille
-      c.rect(cx, cy, sz, sz, { fill: "ink", stroke: "none", w2: 0, opacity: .85 });
+/** mention Pixel Picole, en pied de planche */
+function buildFooter(s, fs) {
+  const c = new Canvas();
+  const size = clamp(fs * .8, 2.2, 3.6);
+  c.txt(0, 0, "© PIXEL PICOLE", { size, weight: 700, fill: "mute", track: size * .32 });
+  return { els: c.els, h: size };
+}
+
+/** Décor : des carrés pixel de taille unique. Ils vivent là où ils vivent sur
+    les planches d'origine — de part et d'autre du titre, et en frise le long
+    des bords — jamais au milieu de la feuille, et jamais sur le contenu. */
+function scatterPixels(s, page, rects, head, seed) {
+  if (!s.confetti || !(s.pixel > 0)) return [];
+  const size = +s.pixel;
+  const edge = clamp(s.margin * .45, 3.5, 10);
+  const pad = Math.max(size * 1.5, 6);
+  const ring = clamp(s.margin + size * 2.2, 14, 46);
+  const target = clamp(Math.round((page.w + page.h) / 34), 8, 28);
+  const R = rng(seed);
+  const put = [];
+  const free = (x, y) => {
+    if (x < edge || y < edge || x + size > page.w - edge || y + size > page.h - edge) return false;
+    for (const r of rects)
+      if (x < r.x1 + pad && x + size > r.x0 - pad && y < r.y1 + pad && y + size > r.y0 - pad) return false;
+    return true;
+  };
+  const inRing = (x, y) => x < ring || y < ring || x + size > page.w - ring || y + size > page.h - ring;
+  const spaced = (x, y) => put.every(p => Math.abs(p[0] - x) >= size * 2 || Math.abs(p[1] - y) >= size * 2);
+  const near = [[size, 0], [-size, 0], [0, size], [0, -size], [size, size], [-size, -size]];
+  const bandH = head ? head.y1 - head.y0 : 0;
+  for (let t = 0; t < 1200 && put.length < target; t++) {
+    const aroundTitle = head && bandH > size && R() < .55;
+    const x = edge + R() * (page.w - 2 * edge - size);
+    const y = aroundTitle ? head.y0 + R() * (bandH - size)
+                          : edge + R() * (page.h - 2 * edge - size);
+    if (!free(x, y) || !spaced(x, y)) continue;
+    if (!aroundTitle && !inRing(x, y)) continue;
+    put.push([x, y]);
+    if (R() < .32) {                                   // parfois un carré accolé
+      const d = near[Math.floor(R() * near.length)];
+      const nx = x + d[0], ny = y + d[1];
+      if (free(nx, ny) && put.every(q => Math.abs(q[0] - nx) > .01 || Math.abs(q[1] - ny) > .01)) put.push([nx, ny]);
     }
   }
-  return { els: c.els, h };
+  return put.map(p => ({ t:"rect", x:p[0], y:p[1], w:size, h:size, r:0,
+                         fill:"ink", stroke:"none", w2:0, opacity:.9 }));
 }
 
 function buildLegend(s, width, fs, R) {
@@ -1004,7 +1143,12 @@ function buildLegend(s, width, fs, R) {
 
   const lineH = Math.max(2 * r, lab) + hint * 1.4;
   lines.forEach((ln, li) => {
-    let x = width / 2 - ln.w / 2;
+    // une seule ligne : on l'étale sur toute la largeur, comme sur l'original
+    const sum = ln.items.reduce((a, l) => a + wOf(l), 0);
+    const spread = lines.length === 1 && ln.items.length > 1
+      ? clamp((width - sum) / (ln.items.length - 1), gap, gap * 7) : gap;
+    const used = sum + spread * (ln.items.length - 1);
+    let x = width / 2 - used / 2;
     const y = li * (lineH + lab * .5) + Math.max(r, lab * .5);
     ln.items.forEach((l, i) => {
       const w = wOf(l);
@@ -1012,7 +1156,7 @@ function buildLegend(s, width, fs, R) {
       c.txt(x + 2 * r + lab * .5, y, l.label, { size: lab, weight: 800, anchor: "start", track: lab * .05 });
       if (l.hint) c.txt(x + 2 * r + lab * .5, y + Math.max(r, lab * .55) + hint * .85, l.hint,
                         { size: hint, weight: 600, anchor: "start", fill: "mute" });
-      x += w + gap;
+      x += w + spread;
     });
   });
   return { els: c.els, h: lines.length * (lineH + lab * .5) };
@@ -1049,27 +1193,44 @@ function compose(s) {
 
   const head = buildHeader(s, design, cw, x.fs);
   const leg  = s.legendOn ? buildLegend(s, cw, x.fs, x.R) : { els: [], h: 0 };
-  const gapH = head.h ? Math.max(pitch * 1.1, 4) : 0;
-  const gapL = leg.h ? Math.max(pitch * 1.5, 6) : 0;
+  const foot = buildFooter(s, x.fs);
 
-  const hbb = head.els.length ? bboxOf(head.els, x.R) : { x0:0, x1:0, w:0 };
-  const lbb = leg.els.length  ? bboxOf(leg.els, x.R)  : { x0:0, x1:0, w:0 };
+  // respiration verticale : proportionnelle à l'entraxe, avec un plancher
+  const gapH = head.h ? clamp(pitch * 1.25, 5, 14) : 0;
+  const gapL = leg.h  ? clamp(pitch * 1.7,  8, 20) : 0;
+  const gapF = clamp(pitch * 1.1, 5, 14);
+
+  const hbb = head.els.length ? bboxOf(head.els, x.R) : { x0:0, x1:0 };
+  const lbb = leg.els.length  ? bboxOf(leg.els, x.R)  : { x0:0, x1:0 };
   const left  = Math.min(0, hbb.x0, lbb.x0);
   const right = Math.max(cw, hbb.x1, lbb.x1);
   const totalW = right - left;
-  const totalH = head.h + gapH + ch + gapL + leg.h;
+  const blockH = head.h + gapH + ch + gapL + leg.h;
+  const totalH = blockH + gapF + foot.h;
 
   const inner = { w: page.w - 2 * s.margin, h: page.h - 2 * s.margin };
   const fits = totalW <= inner.w + .01 && totalH <= inner.h + .01;
   const ox = s.margin + (inner.w - totalW) / 2 - left;
-  const oy = s.margin + (inner.h - totalH) / 2;
+  // bloc centré sur toute la hauteur utile, mais jamais collé au pied de planche
+  const oy = s.margin + clamp((inner.h - blockH) / 2, 0, Math.max(0, inner.h - foot.h - gapF - blockH));
 
-  let els = shift(head.els, ox, oy)
-    .concat(shift(content, ox, oy + head.h + gapH))
-    .concat(shift(leg.els,  ox, oy + head.h + gapH + ch + gapL));
+  const headEls = shift(head.els, ox, oy);
+  const gridEls = shift(content, ox, oy + head.h + gapH);
+  const legEls  = shift(leg.els, ox, oy + head.h + gapH + ch + gapL);
+  const footEls = shift(foot.els, s.margin + inner.w / 2, s.margin + inner.h - foot.h / 2);
+
+  // le décor évite chaque bande séparément : les pixels peuvent border le titre
+  const bands = [headEls, gridEls, legEls, footEls]
+    .filter(e => e.length).map(e => bboxOf(e, x.R));
+  const hb = headEls.length ? bboxOf(headEls, x.R) : null;
+  const titleBand = hb ? { y0: hb.y0 - (hb.y1 - hb.y0) * .55, y1: hb.y1 + (hb.y1 - hb.y0) * .35 } : null;
+  const deco = scatterPixels(s, page, bands, titleBand,
+                             (s.title || "").length * 31 + Math.round(cw) * 7 + 17);
+
+  const els = deco.concat(headEls, gridEls, legEls, footEls);
 
   return { design, els, page, inner, totalW, totalH, contentW: cw, contentH: ch,
-           fits, pitch, days, start, end, note: per.note, x };
+           fits, pitch, days, start, end, note: per.note, deco: deco.length, x };
 }
 
 function toSVG(sheet, s, forExport) {
@@ -1087,29 +1248,27 @@ function toSVG(sheet, s, forExport) {
    7. Interface
    ------------------------------------------------------------------ */
 const $ = sel => document.querySelector(sel);
-const LEGEND_DEFAULT = [
-  { label:"CHILL",    hint:"0",      color:"#7fb2c0" },
-  { label:"TCHIN",    hint:"1–2",    color:"#c0524a" },
-  { label:"DÉRAPAGE", hint:"3+",     color:"#2b2b2b" },
-  { label:"PARTY",    hint:"soirée", color:"#e3b84b" }
-];
+const STICKER_STD = 8, GAP_STD = 1;      // le standard : pastille 8 mm, 1 mm d'air
 const STORE = "pixel-picole/v1";
 
 function defaults() {
   const t = new Date();
   return {
     design:"classic", start: isoStr(UTC(t.getFullYear(), t.getMonth(), 1)),
-    format:"a3", orient:"landscape", cw:210, ch:297, margin:10,
-    sticker:8, gap:1, mark:"dot",
-    title:"PIXEL Picole", subtitle:"", legendOn:true, confetti:true, guides:true,
-    legend: JSON.parse(JSON.stringify(LEGEND_DEFAULT)), opts:{}
+    format:"a3", orient:"landscape", cw:210, ch:297, margin:14,
+    sticker:STICKER_STD, gap:GAP_STD, mark:"dot", pixel:6,
+    theme:"picole", title:"PIXEL Picole", subtitle:"",
+    legendOn:true, confetti:true, guides:true,
+    legend: themeLegend("picole"), opts:{}
   };
 }
 let S = defaults();
 try {
   const saved = JSON.parse(localStorage.getItem(STORE) || "null");
   if (saved && typeof saved === "object") S = Object.assign(S, saved);
-  if (!Array.isArray(S.legend) || !S.legend.length) S.legend = JSON.parse(JSON.stringify(LEGEND_DEFAULT));
+  if (!Array.isArray(S.legend) || !S.legend.length) S.legend = themeLegend("picole");
+  if (!(S.pixel > 0)) S.pixel = 6;
+  if (!THEMES[S.theme]) S.theme = "picole";
   if (!DESIGNS[S.design]) S.design = "classic";
   if (!S.opts) S.opts = {};
 } catch (e) { /* premier lancement */ }
@@ -1175,16 +1334,41 @@ function buildLegendEditor() {
   S.legend.forEach((l, i) => {
     const row = document.createElement("div");
     row.className = "leg-row";
-    row.innerHTML = `<input type="color" value="${l.color}">
-      <input type="text" value="${esc(l.label)}" maxlength="14" placeholder="libellé">
-      <input type="text" value="${esc(l.hint || "")}" maxlength="8" placeholder="note">`;
+    row.innerHTML = `<input type="color" value="${l.color}" title="couleur de la pastille">
+      <input type="text" value="${esc(l.label)}" maxlength="18" placeholder="nom">
+      <input type="text" value="${esc(l.hint || "")}" maxlength="10" placeholder="détail">
+      <button class="del" title="Retirer cette pastille" ${S.legend.length < 2 ? "disabled" : ""}>×</button>`;
     const [c, a, b] = row.querySelectorAll("input");
     c.oninput = () => { l.color = c.value; render(); };
     a.oninput = () => { l.label = a.value; render(); };
     b.oninput = () => { l.hint  = b.value; render(); };
+    row.querySelector(".del").onclick = () => {
+      if (S.legend.length < 2) return;
+      S.legend.splice(i, 1); buildLegendEditor(); render();
+    };
     host.appendChild(row);
   });
 }
+$("#leg-add").onclick = () => {
+  if (S.legend.length >= 8) return;
+  const spare = [HUE.menthe, HUE.ardoise, HUE.miel, HUE.eau, HUE.brique, HUE.encre];
+  S.legend.push({ label:"NOUVEAU", hint:"", color: spare[S.legend.length % spare.length] });
+  buildLegendEditor(); render();
+};
+
+$("#theme").innerHTML = THEME_ORDER
+  .map(k => `<option value="${k}">${esc(THEMES[k].label)}${k === "picole" ? " · défaut" : ""}</option>`).join("")
+  + `<option value="custom">Sur mesure — je remplis moi-même</option>`;
+$("#theme").onchange = e => {
+  const k = e.target.value;
+  S.theme = k;
+  if (THEMES[k]) {
+    S.title = "PIXEL " + THEMES[k].word;
+    S.legend = themeLegend(k);
+    buildLegendEditor();
+  }
+  syncInputs(); render();
+};
 
 $("#format").innerHTML = FORMAT_ORDER.map(k => `<option value="${k}">${esc(FORMATS[k].name)}</option>`).join("");
 
@@ -1210,6 +1394,9 @@ function syncInputs() {
   $("#margin").value = S.margin; $("#marginN").value = S.margin;
   $("#sticker").value = S.sticker; $("#stickerN").value = S.sticker;
   $("#gap").value = S.gap; $("#gapN").value = S.gap;
+  $("#pixel").value = S.pixel; $("#pixelN").value = S.pixel;
+  $("#pixel-size-f").hidden = !S.confetti;
+  $("#theme").value = S.theme;
   $("#title").value = S.title; $("#subtitle").value = S.subtitle;
   $("#subtitle").placeholder = "· " + DESIGNS[S.design].name.toLowerCase() + " ·";
   $("#opt-legend").checked = S.legendOn;
@@ -1223,16 +1410,17 @@ $("#start").onchange = e => { S.start = e.target.value || S.start; syncInputs();
 $("#format").onchange = e => { S.format = e.target.value; syncInputs(); render(); };
 $("#cw").oninput = e => { S.cw = +e.target.value; render(); };
 $("#ch").oninput = e => { S.ch = +e.target.value; render(); };
-$("#title").oninput = e => { S.title = e.target.value; render(); };
+$("#title").oninput = e => { S.title = e.target.value; S.theme = "custom"; syncInputs(); render(); };
 $("#subtitle").oninput = e => { S.subtitle = e.target.value; render(); };
 $("#opt-legend").onchange = e => { S.legendOn = e.target.checked; render(); };
-$("#opt-confetti").onchange = e => { S.confetti = e.target.checked; render(); };
+$("#opt-confetti").onchange = e => { S.confetti = e.target.checked; syncInputs(); render(); };
 $("#opt-guides").onchange = e => { S.guides = e.target.checked; render(); };
 seg("#orient", "orient");
 seg("#mark", "mark");
 pair("#margin", "#marginN", "margin");
 pair("#sticker", "#stickerN", "sticker");
 pair("#gap", "#gapN", "gap");
+pair("#pixel", "#pixelN", "pixel");
 
 /* ---------- suggestions quand ça ne rentre pas ---------- */
 function withS(over) { return Object.assign({}, S, over); }
@@ -1284,8 +1472,8 @@ function draw() {
   const dims = `${mm(sheet.totalW)} × ${mm(sheet.totalH)} mm`;
   if (sheet.fits) {
     const big = biggestStickerThatFits();
-    st.innerHTML = `<b><i class="dot"></i>Ça rentre.</b><p>La planche fait <b>${dims}</b>,
-      il reste ${mm(sheet.inner.w - sheet.totalW)} mm en largeur et ${mm(sheet.inner.h - sheet.totalH)} mm en hauteur.</p>`
+    st.innerHTML = `<b><i class="dot"></i>Ça rentre.</b><p>La planche fait <b>${dims}</b> — il reste `
+      + `${mm(sheet.inner.w - sheet.totalW)} mm de blanc en largeur et ${mm(sheet.inner.h - sheet.totalH)} mm en hauteur.</p>`
       + (big ? `<div class="fixes"><button class="chip" data-fix="sticker" data-v="${big}">Remplir la page : stickers de ${mm(big)} mm</button></div>` : "");
     st.querySelectorAll(".chip").forEach(b => b.onclick = () => {
       S.sticker = +b.dataset.v; syncInputs(); render();
@@ -1317,8 +1505,19 @@ function draw() {
     ["Cases", `${sheet.days.length} jours`]
   ].map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
 
-  $("#pitch-hint").innerHTML = `Entraxe : <b>${mm(sheet.pitch)} mm</b> entre deux centres.
-    Les stickers de 8 mm espacés de 1 mm sont la référence de l'original.`;
+  const std = +S.sticker >= STICKER_STD && +S.gap >= GAP_STD;
+  const note = $("#pitch-note");
+  note.className = "note " + (std ? "good" : "warn");
+  note.innerHTML = std
+    ? `Entraxe <b>${mm(sheet.pitch)} mm</b> — pastilles de <b>${mm(S.sticker)} mm</b> avec au moins
+       <b>${mm(S.gap)} mm</b> d'air. Conforme au standard 8 + 1 : des gommettes du commerce
+       se collent sans se toucher.`
+    : `Entraxe <b>${mm(sheet.pitch)} mm</b> — en dessous du standard 8 + 1.
+       Des gommettes de 8 mm se chevaucheraient : prévois des pastilles de
+       <b>${mm(Math.max(2, sheet.pitch - GAP_STD))} mm</b> au plus, ou remplis au crayon.
+       <button class="chip" id="std-reset">Revenir au 8 + 1</button>`;
+  const rst = $("#std-reset");
+  if (rst) rst.onclick = () => { S.sticker = STICKER_STD; S.gap = GAP_STD; syncInputs(); render(); };
   $("#period-hint").innerHTML = `Du <b>${fmtDate(sheet.start)}</b> au <b>${fmtDate(sheet.end)}</b> — ${sheet.days.length} jours.`
     + (sheet.note ? `<br><span style="color:var(--tchin)">${esc(sheet.note)}</span>` : "")
     + (sheet.x.unplaced ? `<br><span style="color:var(--tchin)">${sheet.x.unplaced} jour(s) sans case.</span>` : "");
@@ -1344,7 +1543,7 @@ $("#svg").onclick = () => {
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 };
-$("#theme").onclick = () => {
+$("#skin").onclick = () => {
   const cur = document.documentElement.getAttribute("data-theme");
   const next = cur === "light" ? "dark" : cur === "dark" ? "" : "light";
   if (next) document.documentElement.setAttribute("data-theme", next);
