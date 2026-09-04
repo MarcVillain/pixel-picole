@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="Pixel Picole">
+  <rect width="128" height="128" rx="28" fill="#1c1e21"/>
+  <circle cx="42" cy="42" r="22" fill="#7fb2c0"/>
+  <circle cx="86" cy="42" r="22" fill="#c0524a"/>
+  <circle cx="42" cy="86" r="22" fill="#e3b84b"/>
+  <circle cx="86" cy="86" r="22" fill="#ffffff" fill-opacity=".16"/>
+</svg>

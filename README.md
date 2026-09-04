@@ -1,14 +1,18 @@
 <div align="center">
 
+<img src="assets/logo.svg" width="88" alt="">
+
 # PIXEL *Picole*
 
-**Un an, une case par jour, une gommette de 8 mm.**
+**Un an, une case par jour, une pastille de 8 mm.**
 Générateur de planches vierges à imprimer — un seul fichier HTML, zéro dépendance.
 
-<img src="reference/classic.jpg" width="46%" alt="Planche Classic remplie, dessinée à la main">
-<img src="reference/4-saisons.jpg" width="46%" alt="Planche 4 Saisons vierge, dessinée à la main">
+<img src="assets/classic.png" width="88%" alt="Planche Classic, aperçu rempli">
 
-*Les deux planches d'origine, faites à la main. Le générateur produit les mêmes, à n'importe quelle date et n'importe quel format.*
+<img src="assets/4-saisons.png" width="43%" alt="Planche 4 Saisons, aperçu rempli">
+<img src="assets/spirale.png" width="43%" alt="Planche Spirale, aperçu rempli">
+
+*Quatre éditions, ici avec l'aperçu rempli — la planche s'imprime vide.*
 
 </div>
 
@@ -56,6 +60,8 @@ qui sert une fois par an doit survivre à ses dépendances. Rien à mettre à jo
 rien à réinstaller, rien qui casse.
 
 ## Utiliser
+
+<img src="assets/app.png" width="100%" alt="L'interface du générateur">
 
 Ouvre `index.html` dans ton navigateur. Puis :
 

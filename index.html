@@ -16,6 +16,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pixel Picole — générateur de trackers</title>
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjMWMxZTIxIi8+PGNpcmNsZSBjeD0iNDIiIGN5PSI0MiIgcj0iMjIiIGZpbGw9IiM3ZmIyYzAiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjQyIiByPSIyMiIgZmlsbD0iI2MwNTI0YSIvPjxjaXJjbGUgY3g9IjQyIiBjeT0iODYiIHI9IjIyIiBmaWxsPSIjZTNiODRiIi8+PGNpcmNsZSBjeD0iODYiIGN5PSI4NiIgcj0iMjIiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iLjE2Ii8+PC9zdmc+">
 <style>
 /* ============================================================
    PIXEL PICOLE — générateur de trackers annuels
@@ -95,8 +96,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .brand h1{margin:0;font-size:19px;letter-spacing:-.02em;font-weight:800;display:flex;align-items:baseline;gap:6px}
 .brand h1 em{font-family:"Snell Roundhand","Segoe Script","Brush Script MT",cursive;font-style:italic;font-weight:500;font-size:21px;color:var(--accent)}
 .brand p{margin:2px 0 0;font-size:11.5px;color:var(--ink-3);letter-spacing:.02em}
-.logo{width:34px;height:34px;border-radius:10px;background:var(--ink);display:grid;place-items:center;flex:none;box-shadow:var(--shadow-1)}
-.logo i{display:block;width:14px;height:14px;border-radius:50%;background:var(--chill);box-shadow:6px 0 0 -1px var(--tchin), -6px 0 0 -1px var(--party)}
+.logo{width:34px;height:34px;border-radius:10px;flex:none;box-shadow:var(--shadow-1);display:block}
 .theme-btn{margin-left:auto;width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:var(--panel-2);cursor:pointer;display:grid;place-items:center;color:var(--ink-2);transition:.18s var(--ease)}
 .theme-btn:hover{color:var(--ink);border-color:var(--line-2);transform:translateY(-1px)}
 
@@ -255,7 +255,11 @@ input[type=color]{width:100%;height:30px;padding:2px;border:1px solid var(--line
   <!-- =================== PANNEAU =================== -->
   <aside class="side">
     <div class="brand">
-      <div class="logo"><i></i></div>
+      <svg class="logo" viewBox="0 0 128 128" aria-hidden="true">
+        <rect width="128" height="128" rx="28" fill="#1c1e21"/>
+        <circle cx="42" cy="42" r="22" fill="#7fb2c0"/><circle cx="86" cy="42" r="22" fill="#c0524a"/>
+        <circle cx="42" cy="86" r="22" fill="#e3b84b"/><circle cx="86" cy="86" r="22" fill="#fff" fill-opacity=".16"/>
+      </svg>
       <div>
         <h1>Pixel <em>Picole</em></h1>
         <p>Générateur de trackers à stickers</p>
