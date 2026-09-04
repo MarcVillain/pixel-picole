@@ -72,6 +72,10 @@ generator says so and offers a size that works.
 Round, square and triangle stickers. The printed guide can be a dot, an outline,
 a filled shape, a cross or the day number, in any shade of grey.
 
+A sticker cut in half can be laid over a whole one. Two halves cut at different
+angles leave three colours visible in one cell. The option sits under the sticker
+list and is off by default.
+
 ### Themes
 
 Pixel Picole is the default. A selector fills in the title and stickers for other

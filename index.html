@@ -172,6 +172,12 @@ input[type=color]{width:100%;height:30px;padding:2px;border:1px solid var(--line
 
 /* légende éditable */
 .leg-row{display:grid;grid-template-columns:30px minmax(0,1fr) 72px 26px;gap:6px;margin-bottom:7px;align-items:center}
+.leg-row.cut{grid-template-columns:30px minmax(0,1fr) 62px 28px 26px}
+.leg-row .half{border:1px solid var(--line);background:var(--panel-2);border-radius:7px;height:30px;cursor:pointer;
+  color:var(--ink-3);font-size:14px;line-height:1;padding:0;transition:.16s var(--ease)}
+.leg-row .half:hover{border-color:var(--line-2);color:var(--ink)}
+.leg-row .half[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);
+  background:color-mix(in oklab,var(--accent) 10%,var(--panel-2))}
 .leg-row input[type=text]{padding:6px 8px;font-size:12px}
 .leg-row .del{border:1px solid var(--line);background:var(--panel-2);border-radius:7px;height:30px;cursor:pointer;
   color:var(--ink-3);font-size:15px;line-height:1;transition:.16s var(--ease);padding:0}
@@ -413,6 +419,11 @@ input[type=color]{width:100%;height:30px;padding:2px;border:1px solid var(--line
         <h2>Pastilles <span></span><span id="lab-legend"></span></h2>
         <div id="legend-editor"></div>
         <button class="leg-add" id="leg-add">+ Ajouter une pastille</button>
+        <label class="sw" style="margin-top:10px"><input type="checkbox" id="opt-halves"><i></i>
+          <span>Demi-pastilles</span></label>
+        <div class="hint" id="halves-hint" hidden>Une demi-pastille se colle par-dessus une pastille
+          entière. En superposer deux, coupées dans des sens différents, donne trois couleurs sur la
+          même case. Le bouton ◐ de chaque ligne indique lesquelles sont des moitiés.</div>
         <div class="f" style="margin-top:14px">
           <label for="theme">Partir d'un thème</label>
           <select id="theme"></select>
@@ -703,7 +714,9 @@ function renderEls(els, cfg) {
         const c = e.fill ? col(e.fill) : cfg.tint;
         const sh = cfg.shape;
         if (cfg.fills && e.day != null && cfg.fills[e.day]) {   // aperçu rempli, écran seulement
-          out.push(shapeSVG(sh, e.x, e.y, r, `fill="${cfg.fills[e.day]}"`));
+          const f = cfg.fills[e.day];
+          out.push(shapeSVG(sh, e.x, e.y, r, `fill="${f.base}"`));
+          (f.halves || []).forEach(hh => out.push(halfSVG(sh, e.x, e.y, r, `fill="${hh.color}"`, hh.deg)));
           break;
         }
         if (st === "num" && e.day == null) st = "dot";          // cases sans jour : point
@@ -721,10 +734,15 @@ function renderEls(els, cfg) {
         else
           out.push(`<circle${cls} cx="${n3(e.x)}" cy="${n3(e.y)}" r="${n3(Math.min(.55, r * .18 + .35))}" fill="${c}"${op}/>`);
         break; }
-      case "disc":
-        out.push(shapeSVG(e.shape === false ? "circle" : cfg.shape, e.x, e.y, e.r,
-                          `${cls} fill="${col(e.fill)}" stroke="${col(e.stroke)}" stroke-width="${n3(e.w)}"${op}`));
-        break;
+      case "disc": {
+        const shp = e.shape === false ? "circle" : cfg.shape;
+        if (e.half) {                                      // demi-pastille : contour plus moitié pleine
+          out.push(shapeSVG(shp, e.x, e.y, e.r, `${cls} fill="none" stroke="${col("faint")}" stroke-width=".3"${op}`));
+          out.push(halfSVG(shp, e.x, e.y, e.r, `${cls} fill="${col(e.fill)}"${op}`, 0));
+        } else
+          out.push(shapeSVG(shp, e.x, e.y, e.r,
+                            `${cls} fill="${col(e.fill)}" stroke="${col(e.stroke)}" stroke-width="${n3(e.w)}"${op}`));
+        break; }
       case "text": {
         const fam = e.family || SANS;
         const tr = e.rot ? ` transform="rotate(${e.rot} ${n3(e.x)} ${n3(e.y)})"` : "";
@@ -1239,7 +1257,8 @@ registerDesign({
 const HUE = { eau:"#7fb2c0", miel:"#e3b84b", brique:"#c0524a", encre:"#2b2b2b", menthe:"#6fae8f", ardoise:"#6b7f8c" };
 const THEMES = {
   picole:  { word:"Picole",  label:"Picole · verres",            legend:[
-    ["CHILL","0",HUE.eau], ["TCHIN","1–2",HUE.brique], ["DÉRAPAGE","3+",HUE.encre], ["PARTY","soirée",HUE.miel]] },
+    ["CHILL","0",HUE.eau], ["TCHIN","1–2",HUE.brique], ["DÉRAPAGE","3+",HUE.encre],
+    ["PARTY","soirée",HUE.miel,true]] },
   ecrans:  { word:"Écrans",  label:"Écrans · réseaux, téléphone", legend:[
     ["AU VERT","0",HUE.menthe], ["TRANQUILLE","< 1 h",HUE.eau], ["SCROLL","1–3 h",HUE.miel], ["GRANDE SESSION","3 h +",HUE.brique]] },
   series:  { word:"Séries",  label:"Séries · films, vidéos",      legend:[
@@ -1249,14 +1268,16 @@ const THEMES = {
   dodo:    { word:"Dodo",    label:"Dodo · sommeil",              legend:[
     ["COURTE","< 6 h",HUE.brique], ["MOYENNE","6–7 h",HUE.miel], ["BONNE","7–8 h",HUE.eau], ["AU TOP","8 h +",HUE.menthe]] },
   popote:  { word:"Popote",  label:"Popote · cuisine maison",     legend:[
-    ["SUR LE POUCE","0",HUE.eau], ["MAISON","1",HUE.menthe], ["GRANDE TABLÉE","2 +",HUE.miel], ["NOUVELLE RECETTE","★",HUE.brique]] },
+    ["SUR LE POUCE","0",HUE.eau], ["MAISON","1",HUE.menthe], ["GRANDE TABLÉE","2 +",HUE.miel],
+    ["NOUVELLE RECETTE","★",HUE.brique,true]] },
   plaisir: { word:"Plaisir", label:"Plaisir · intimité",          legend:[
     ["CALME","0",HUE.eau], ["SOLO","1",HUE.miel], ["À DEUX","2",HUE.brique], ["PLUS","3 +",HUE.encre]] },
   humeur:  { word:"Humeur",  label:"Humeur · comment ça va",      legend:[
     ["JOUR DUR","",HUE.ardoise], ["ÇA VA","",HUE.eau], ["BONNE","",HUE.miel], ["LUMINEUSE","",HUE.menthe]] }
 };
 const THEME_ORDER = ["picole","ecrans","series","bouge","dodo","popote","plaisir","humeur"];
-const themeLegend = id => THEMES[id].legend.map(l => ({ label:l[0], hint:l[1], color:l[2] }));
+const themeLegend = id =>
+  THEMES[id].legend.map(l => ({ label:l[0], hint:l[1], color:l[2], half: !!l[3] }));
 
 /* ------------------------------------------------------------------
    5. Formats de papier (mm, en portrait)
@@ -1411,7 +1432,12 @@ function valueNoise(seed) {
 }
 function previewFill(s, days, seed) {
   const n = valueNoise(seed), n2 = valueNoise(seed + 7.3), n3 = valueNoise(seed + 19.1);
-  const N = s.legend.length;
+  const nh = valueNoise(seed + 53.7);
+  const isHalf = l => !!(s.halves && l.half);
+  const full = s.legend.filter(l => !isHalf(l));
+  const halves = s.legend.filter(isHalf);
+  const base = full.length ? full : s.legend;
+
   const v = days.map((dt, i) => {
     const wd = dowMon(dt);
     return (.40 * n(i / 7.5) + .30 * n2(i / 38) + .16 * n3(i / 2.2)) / .86
@@ -1419,13 +1445,26 @@ function previewFill(s, days, seed) {
   });
   // seuils pris en quantiles : la première pastille domine, la dernière reste rare,
   // quelle que soit l'amplitude réelle du bruit
-  const share = [.58, .84, .94, .975, .99, .997];
-  const sorted = v.slice().sort((a, b) => a - b);
-  const cut = share.slice(0, N - 1).map(q => sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))]);
-  return v.map(t => {
+  const quant = (arr, share) => {
+    const sorted = arr.slice().sort((a, b) => a - b);
+    return share.map(q => sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))]);
+  };
+  const cut = quant(v, [.58, .84, .94, .975, .99, .997].slice(0, base.length - 1));
+
+  // une trame de bruit à part décide des jours qui reçoivent une demi-pastille
+  const w = days.map((dt, i) => nh(i / 6.5) + (dowMon(dt) >= 4 ? .22 : 0));
+  const hCut = halves.length ? quant(w, halves.length > 1 ? [.86, .96] : [.88]) : [];
+
+  return v.map((t, i) => {
     let k = 0;
     for (let j = 0; j < cut.length; j++) if (t > cut[j]) k = j + 1;
-    return s.legend[Math.min(k, N - 1)].color;
+    const out = { base: base[Math.min(k, base.length - 1)].color, halves: [] };
+    if (halves.length && w[i] > hCut[0]) {
+      out.halves.push({ color: halves[0].color, deg: 0 });
+      if (halves.length > 1 && hCut[1] != null && w[i] > hCut[1])
+        out.halves.push({ color: halves[1].color, deg: 90 });
+    }
+    return out;
   });
 }
 
@@ -1458,7 +1497,7 @@ function buildLegend(s, width, fs, R) {
     const y = li * (lineH + lab * .5) + Math.max(r, lab * .5);
     ln.items.forEach((l, i) => {
       const w = wOf(l);
-      c.disc(x + r, y, r, { fill: l.color, stroke: "none" });
+      c.disc(x + r, y, r, { fill: l.color, stroke: "none", half: s.halves && l.half });
       c.txt(x + 2 * r + lab * .5, y, l.label, { size: lab, weight: 800, anchor: "start", track: lab * .05 });
       if (l.hint) c.txt(x + 2 * r + lab * .5, y + Math.max(r, lab * .55) + hint * .85, l.hint,
                         { size: hint, weight: 600, anchor: "start", fill: "mute" });
@@ -1557,6 +1596,20 @@ function shapeSVG(shape, x, y, r, attrs) {
   return `<circle cx="${n3(x)}" cy="${n3(y)}" r="${n3(r)}" ${attrs}/>`;
 }
 
+/** Moitié d'une forme, à poser par-dessus une pastille entière. deg fait
+    pivoter la coupe, ce qui permet d'en superposer deux et d'obtenir trois
+    couleurs sur une même case. */
+function halfSVG(shape, x, y, r, attrs, deg) {
+  const tr = deg ? ` transform="rotate(${n3(deg)} ${n3(x)} ${n3(y)})"` : "";
+  let d;
+  if (shape === "square") d = `M${n3(x - r)} ${n3(y)}H${n3(x + r)}V${n3(y + r)}H${n3(x - r)}Z`;
+  else if (shape === "triangle") {
+    const h = r * Math.sqrt(3), b = y + h / 3, k = r * 2 / 3;
+    d = `M${n3(x - k)} ${n3(y)}H${n3(x + k)}L${n3(x + r)} ${n3(b)}H${n3(x - r)}Z`;
+  } else d = `M${n3(x - r)} ${n3(y)}A${n3(r)} ${n3(r)} 0 0 0 ${n3(x + r)} ${n3(y)}Z`;
+  return `<path d="${d}"${tr} ${attrs}/>`;
+}
+
 /** gris du repère : 0 = presque effacé, 100 = encre */
 function tintColor(t) {
   const v = Math.round(220 - (220 - 28) * clamp(+t, 0, 100) / 100);
@@ -1590,7 +1643,7 @@ function defaults() {
     sticker:STICKER_STD, gap:GAP_STD, maxSticker:STICKER_STD, maxGap:GAP_STD,
     shape:"circle", mark:"dot", tint:70, pixel:3,
     theme:"picole", title:"PIXEL Picole", subtitle:"", titleFont:"anglaise",
-    legendOn:true, confetti:true, guides:true, pixelTitle:true,
+    legendOn:true, confetti:true, guides:true, pixelTitle:true, halves:false,
     preview:false, previewSeed:1,
     legend: themeLegend("picole"), opts:{}
   };
@@ -1726,15 +1779,19 @@ function buildLegendEditor() {
   host.innerHTML = "";
   S.legend.forEach((l, i) => {
     const row = document.createElement("div");
-    row.className = "leg-row";
+    row.className = "leg-row" + (S.halves ? " cut" : "");
     row.innerHTML = `<input type="color" value="${l.color}" title="couleur de la pastille">
       <input type="text" value="${esc(l.label)}" maxlength="18" placeholder="nom">
-      <input type="text" value="${esc(l.hint || "")}" maxlength="10" placeholder="détail">
-      <button class="del" title="Retirer cette pastille" ${S.legend.length < 2 ? "disabled" : ""}>×</button>`;
+      <input type="text" value="${esc(l.hint || "")}" maxlength="10" placeholder="détail">`
+      + (S.halves ? `<button class="half" aria-pressed="${!!l.half}"
+           title="${l.half ? "Moitié, à poser par-dessus" : "Pastille entière"}">${l.half ? "◐" : "●"}</button>` : "")
+      + `<button class="del" title="Retirer cette pastille" ${S.legend.length < 2 ? "disabled" : ""}>×</button>`;
     const [c, a, b] = row.querySelectorAll("input");
     c.oninput = () => { l.color = c.value; render(); };
     a.oninput = () => { l.label = a.value; render(); };
     b.oninput = () => { l.hint  = b.value; render(); };
+    const hb = row.querySelector(".half");
+    if (hb) hb.onclick = () => { l.half = !l.half; buildLegendEditor(); render(); };
     row.querySelector(".del").onclick = () => {
       if (S.legend.length < 2) return;
       S.legend.splice(i, 1); buildLegendEditor(); render();
@@ -1807,6 +1864,8 @@ function syncInputs() {
   $("#opt-pixtitle").checked = S.pixelTitle;
   $("#opt-preview").checked = S.preview;
   $("#preview-note").hidden = !S.preview;
+  $("#opt-halves").checked = S.halves;
+  $("#halves-hint").hidden = !S.halves;
   syncResets();
   $("#orient").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === S.orient));
   $("#mark").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === S.mark));
@@ -1824,6 +1883,10 @@ $("#opt-confetti").onchange = e => { S.confetti = e.target.checked; syncInputs()
 $("#opt-guides").onchange = e => { S.guides = e.target.checked; render(); };
 $("#opt-pixtitle").onchange = e => { S.pixelTitle = e.target.checked; render(); };
 $("#opt-preview").onchange = e => { S.preview = e.target.checked; syncInputs(); render(); };
+$("#opt-halves").onchange = e => {
+  S.halves = e.target.checked;
+  buildLegendEditor(); syncInputs(); render();
+};
 $("#reseed").onclick = () => { S.previewSeed = (S.previewSeed || 1) + 1; render(); };
 $("#opt-limits").onchange = e => {
   S.showLimits = e.target.checked;
@@ -2018,7 +2081,7 @@ appEl.addEventListener("scroll", () => {
 [["lab-orient","orient"], ["lab-shape","shape"], ["lab-mark","mark"], ["lab-legend","legend"]]
   .forEach(([id, key]) => addReset(document.getElementById(id), key));
 [["opt-pixtitle","pixelTitle"], ["opt-legend","legendOn"], ["opt-confetti","confetti"],
- ["opt-guides","guides"], ["opt-preview","preview"]
+ ["opt-guides","guides"], ["opt-preview","preview"], ["opt-halves","halves"]
 ].forEach(([id, key]) => addReset(document.getElementById(id).closest("label.sw"), key));
 
 buildDesignCards();
