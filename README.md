@@ -4,278 +4,152 @@
 
 # PIXEL *Picole*
 
-**Un an, une case par jour, une pastille de 8 mm.**
-Générateur de planches vierges à imprimer — un seul fichier HTML, zéro dépendance.
+**One year, one cell per day, one sticker.**
 
-<img src="assets/classic.png" width="88%" alt="Planche Classic, aperçu rempli">
+A generator for printable tracker sheets. Single HTML file, no dependencies.
 
-<img src="assets/4-saisons.png" width="43%" alt="Planche 4 Saisons, aperçu rempli">
-<img src="assets/spirale.png" width="43%" alt="Planche Spirale, aperçu rempli">
+<img src="assets/classic.png" width="88%" alt="Classic sheet, filled preview">
 
-*Quatre éditions, ici avec l'aperçu rempli — la planche s'imprime vide.*
+<img src="assets/4-saisons.png" width="43%" alt="4 Saisons sheet, filled preview">
+<img src="assets/spirale.png" width="43%" alt="Spirale sheet, filled preview">
+
+*The sheets print empty. Shown here with the filled preview.*
 
 </div>
 
 ---
 
-## L'idée
+## The idea
 
-Un tracker mural n'est pas un objectif. C'est un **carnet de bord**.
+A wall tracker is a logbook, not a goal.
 
-On ne se fixe pas « moins de trois verres par semaine » au 1er janvier pour se sentir
-nul le 12. On colle simplement une gommette par jour, dix secondes le soir, sans
-commentaire. Au bout de deux mois, on recule d'un pas et **le mur parle** : les
-vendredis ressortent, les périodes chargées au boulot ressortent, ce voyage de
-mars ressort. Personne n'a eu besoin de le noter — la couleur l'a fait.
+You stick one sticker a day and write nothing down. After a couple of months the
+wall starts talking. Fridays stand out. Heavy weeks at work stand out. That trip
+in March stands out. Nobody had to record any of it.
 
-C'est de là que viennent les vrais objectifs. Pas d'une résolution décidée à
-l'avance dans le vide, mais d'un motif qu'on a vu apparaître tout seul et qu'on a
-envie de bouger. **Observer d'abord, décider ensuite.**
+Real goals come from there. From a pattern you watched appear and now want to
+move.
 
-Trois principes tiennent tout le projet :
+Three rules hold the project together.
 
-- **Constater, pas juger.** Une case est une information, pas une faute. Un mois
-  bien rouge est un mois bien rouge : c'est déjà une réponse, ce n'est pas une note.
-- **Le vocabulaire compte.** Les pastilles s'appellent CHILL, TCHIN, PARTY — pas
-  « échec » ni « rechute ». On nomme ce qui s'est passé, avec les mots qu'on
-  emploierait avec un ami. C'est pour ça que tout est modifiable : ce sont *tes*
-  mots qui doivent être sur *ton* mur.
-- **Dix secondes par jour.** Un rituel qui demande davantage s'arrête au bout de
-  trois semaines. Une gommette, c'est tenable un an.
+- A cell is information, not a verdict.
+- The words matter. The stickers are called CHILL, TCHIN, PARTY. You name what
+  happened, the way you would to a friend. Everything is editable so the words on
+  your wall are yours.
+- Ten seconds a day. A ritual that asks for more stops within weeks.
 
-Et ça marche dans les deux sens. Il n'y a rien de spécifiquement alcoolisé dans une
-grille de 365 cases : on suit aussi bien ce qu'on veut voir reculer que ce qu'on
-veut voir grandir — bouger, dormir, cuisiner, lire, appeler ses proches. Le mur ne
-juge pas ce qu'on y met.
+It works both ways. A grid of days has nothing to do with alcohol. Track what you
+want to see shrink, or what you want to see grow.
 
-## L'outil
+## The tool
 
-Tout tient dans **[`index.html`](index.html)** : un fichier, ~1 500 lignes, aucune
-dépendance, aucun build, aucun réseau, aucun compte. On l'ouvre dans un
-navigateur, on règle, on imprime. On peut le mettre sur une clé USB, l'envoyer en
-pièce jointe, ou le garder dix ans — il marchera toujours.
+Everything lives in `index.html`. No dependencies, no build, no network, no
+account. Open it in a browser, set it up, print. Nothing to install and nothing
+to update.
 
-Ce n'est pas une contrainte qu'on s'est imposée pour la beauté du geste : un objet
-qui sert une fois par an doit survivre à ses dépendances. Rien à mettre à jour,
-rien à réinstaller, rien qui casse.
+The interface is in French. Every label on the sheet is editable, so translating
+your own sheet takes a minute.
 
-## Utiliser
+## Using it
 
-<img src="assets/app.png" width="100%" alt="L'interface du générateur">
+<img src="assets/app.png" width="100%" alt="The generator interface">
 
-Ouvre `index.html` dans ton navigateur. Puis :
+Pick an edition, a start date, a paper size and a sticker shape. The filled
+preview draws a plausible year so you can judge the colours before buying
+anything. Print at full size, or export SVG.
 
-1. **Choisis une édition** — Classic, 4 Saisons, Mensuel ou Spirale.
-2. **Pose ta date de début** — n'importe quel jour de l'année, pas seulement le 1er janvier.
-3. **Choisis ton papier** — A6 → A1, Letter, Legal, Tabloid, ou sur mesure.
-4. **Vérifie les pastilles** — 8 mm de diamètre et 1 mm d'air, c'est le maximum.
-5. **Regarde ce que ça donnera** — l'*aperçu rempli* colorie une année plausible.
-6. **Imprime à 100 %** (« taille réelle », surtout pas « ajuster à la page »), ou exporte en SVG.
+Settings stay in your browser.
 
-Les réglages restent en mémoire dans le navigateur. Rien ne part ailleurs.
+### Editions
 
-### L'aperçu rempli
+| Edition | What you read on it |
+| --- | --- |
+| **Classic** | The whole year in one grid. Streaks jump out. |
+| **4 Saisons** | Weeks grouped by season, with a column to rate each week. |
+| **Mensuel** | Twelve small calendars on real weekdays. Shows the weekend effect. |
+| **Spirale** | The year as one continuous ribbon. |
 
-Une planche vide ne dit rien de ce qu'elle donnera au mur. L'aperçu la remplit
-d'une année crédible : pas un tirage à pile ou face, mais trois échelles de bruit
-lissé — l'humeur du jour, la semaine, la saison — plus l'effet vendredi et
-week-end. On y voit des séries, des mois calmes, des périodes chargées : de quoi
-juger un jeu de couleurs avant d'acheter les gommettes. Le bouton *↻ Autre tirage*
-en propose une autre.
+### Stickers
 
-C'est un aperçu écran : il ne s'imprime pas et n'est pas exporté.
+The grid is built around stationery stickers, so the cell size has a ceiling
+rather than a target. Below it you are free. Above it a sticker floats in its
+cell and the grid goes slack. One switch lifts the limits if you use something
+else.
 
-### Les quatre éditions
+Since the cell cannot grow, the paper adapts to the grid. Some editions will not
+fit on smaller sheets. The generator says so and offers a size that works.
 
-| Édition | Ce qu'on y lit | Format conseillé |
-| --- | --- | --- |
-| **Classic** | 12 lignes de mois × 31 colonnes. L'année entière d'un coup d'œil, les séries sautent aux yeux. | A3 paysage |
-| **4 Saisons** | Blocs de semaines ISO, lundi → dimanche, plus une colonne ★ pour noter la semaine. Le meilleur pour les rythmes hebdo. | A3 portrait |
-| **Mensuel** | 12 mini-calendriers alignés sur les vrais jours de la semaine. Révèle l'effet week-end. | A3 portrait |
-| **Spirale** | Les 365 jours en un seul ruban, sans coupure de mois. Très graphique au mur. | A3 portrait |
+Round, square and triangle stickers are all supported, and the printed guide can
+be a dot, an outline, a filled shape, a cross, or the day number.
 
-### La contrainte des 8 mm
+### Themes
 
-Une gommette de 8 mm avec 1 mm d'air impose un **entraxe de 9 mm** entre deux
-centres. C'est un **plafond**, pas un objectif : au-delà, la gommette flotte dans
-sa case et la grille se délave. Les curseurs s'arrêtent donc à 8 et à 1.
+Pixel Picole is the default. A small selector fills in the title and stickers for
+other subjects: screens, series, exercise, sleep, cooking, intimacy, mood. They
+are starting points. Change the names, the colours and the notes, add or remove
+stickers.
 
-En dessous, tout est permis — gommettes de 6 mm, ou remplissage au crayon de
-couleur, qui marche très bien. Le bandeau sous les curseurs affiche en permanence
-l'entraxe réel et rappelle où on en est par rapport au plafond.
+## Publishing
 
-Si tu utilises d'autres gommettes, *J'utilise d'autres gommettes* relève les deux
-plafonds. C'est volontairement rangé derrière un interrupteur : la valeur par
-défaut est celle qui donne une belle planche.
+The repo carries a Pages workflow. Enable Pages with GitHub Actions as the
+source, then push. Any static host works, and so does sending someone the file.
 
-Conséquence directe : **c'est le papier qui s'adapte à la grille**, pas l'inverse.
-Une grille Classic, c'est `31 × 9 ≈ 280 mm` de large, donc **elle ne rentre pas sur
-un A4**. Le générateur le dit franchement plutôt que de rétrécir en douce, et
-propose en un clic le format qui convient — le plus petit qui passe quand il reste
-trop de blanc, le format au-dessus quand ça déborde.
+## Contributing
 
-### Formes et repères
+New editions and layout fixes are the most useful contributions.
 
-Deux réglages, parce que ce sont deux choses différentes.
+- No dependencies and no build step. An idea that needs npm belongs in another
+  project.
+- The engine works in millimetres. A sheet prints at true scale or it does not
+  print.
+- Test across start dates. Leap years and mid-month starts are where it breaks.
+  Every day of the period must land in exactly one cell.
+- Keep the wording kind. No shaming language in labels, themes or the interface.
 
-La **forme** est celle de tes gommettes : rond, carré ou triangle. Elle vaut pour
-toute la planche, légende comprise. Le diamètre réglé plus haut est toujours
-l'encombrement — côté du carré, largeur du triangle, diamètre du rond — donc la
-case reste carrée et l'entraxe ne bouge pas.
+Code and comments are in French, in numbered sections.
 
-Le **repère** est ce qui s'imprime dans la case pour dire où coller : **point**
-(discret, par défaut), **contour** (la forme tracée à la taille exacte, un
-gabarit), **plein** (à colorier au crayon), **croix**, et **N°**, qui numérote les
-jours de 1 à 365 à partir de ta date de début — pratique pour retrouver un jour
-précis, ou pour tenir un carnet en regard.
+## Adding an edition
 
-Un curseur règle leur **gris**, de l'encre au presque effacé. Un repère clair
-disparaît sous la gommette ; un repère foncé se lit à distance quand la planche
-est encore vide.
-
-### Le décor
-
-Le mot principal du titre est **composé de carrés** — une police pixel 5 × 7
-dessinée dans le fichier, accents compris. Aucune police à charger : le titre est
-identique à l'écran, à l'impression et dans le SVG exporté.
-
-Le mot cursif à côté est mis à l'échelle sur mesure : sa hauteur de capitale est
-mesurée dans la police qui a réellement répondu sur la machine, puis ajustée pour
-tomber pile à la hauteur des lettres en pixels, sur la même ligne de base. Une
-anglaise élégante si le système en a une, une italique de labeur sinon — habillé
-sans en faire trop, dans les deux cas.
-
-Les carrés semés autour de la planche sont les mêmes, en 3 mm. Ils ne tombent pas
-au hasard : ils se posent sur une grille invisible au pas du pixel, en petites
-grappes façon tetromino, dans des zones symétriques — de part et d'autre du titre,
-aux quatre coins, sur les deux flancs. D'où un semis qui paraît libre mais reste
-équilibré, et qui ne mord jamais sur la grille, le titre ou la légende. Les deux
-sont désactivables.
-
-### Thèmes
-
-Le générateur s'appelle Pixel Picole et c'est sa configuration par défaut. Mais la
-grille se moque de ce qu'on y met : un sélecteur discret, en bas du panneau
-Pastilles, pré-remplit le titre et les pastilles pour d'autres sujets — écrans,
-séries, activité physique, sommeil, cuisine maison, intimité, humeur.
-
-Ce ne sont que des points de départ. Le vrai réglage, c'est celui d'après : change
-les noms, les couleurs, les descriptions, ajoute ou retire des pastilles. Une
-planche à toi vaut mieux qu'une planche bien nommée.
-
-## Publier sa propre version
-
-Le générateur est un fichier statique : n'importe quel hébergeur fait l'affaire.
-
-**GitHub Pages, en trois clics.** Le dépôt contient déjà
-[`.github/workflows/pages.yml`](.github/workflows/pages.yml). Va dans
-**Settings → Pages**, choisis **Source : GitHub Actions**, et pousse sur la branche
-par défaut. Le site sort sur `https://<compte>.github.io/pixel-picole/`, et se
-remet à jour à chaque push.
-
-**Sans rien installer.** *Settings → Pages → Source : Deploy from a branch*,
-branche `main`, dossier `/ (root)` : `index.html` est servi tel quel.
-
-**Ailleurs.** Netlify, Vercel, Cloudflare Pages, un dossier sur un serveur, une clé
-USB : glisse `index.html`, il n'y a rien à construire. C'est aussi la manière la
-plus simple de partager l'outil — envoyer le fichier suffit.
-
-## Contribuer
-
-Les contributions sont bienvenues — surtout les nouvelles éditions et les
-retouches de mise en page.
-
-- **Une modification = une intention.** Le fichier est unique, donc les diffs
-  parlent : garde-les lisibles.
-- **Pas de dépendance, pas d'outil de build.** Si une idée nécessite npm, c'est
-  qu'elle appartient à un autre projet.
-- **Le millimètre fait foi.** Tout le moteur raisonne en mm. Une planche doit
-  s'imprimer à l'échelle 1:1 ou ne pas s'imprimer.
-- **Vérifie sur plusieurs dates.** Années bissextiles, semaines 53, départs en
-  milieu de mois : c'est là que ça casse. Chaque jour de la période doit tomber
-  dans exactement une case, sans doublon ni orphelin.
-- **Le ton reste bienveillant.** Pas de vocabulaire culpabilisant dans les
-  libellés, les thèmes ou l'interface.
-
-Le code est commenté en français et découpé en sections numérotées : dates,
-primitives de dessin, rendu SVG, éditions, thèmes, formats, composition, interface.
-
-## Ajouter une édition
-
-Une édition est un objet passé à `registerDesign()` (section 4 du script). Elle
-dessine dans un `Canvas` abstrait en millimètres, avec une origine libre : le
-moteur recadre, ajoute le titre, la légende et le pied de planche, sème le décor,
-centre le tout et vérifie que ça rentre.
+An edition is an object passed to `registerDesign()`. It draws into an abstract
+canvas in millimetres, from any origin. The engine crops, adds the title, legend
+and footer, scatters the decoration, centres it and checks that it fits.
 
 ```js
 registerDesign({
-  id: "trimestres",              // clé unique (sert aussi à sauver les options)
+  id: "trimestres",
   name: "Trimestres",
-  cadence: "Trimestriel",        // badge de la vignette
-  desc: "Une phrase : à quoi cette édition sert le mieux.",
-  prefer: "landscape",           // orientation appliquée à la sélection
-  icon: '<g fill="currentColor"><circle cx="10" cy="15" r="2"/></g>', // viewBox 0 0 60 30
+  cadence: "Trimestriel",
+  desc: "Une phrase sur ce que cette édition montre le mieux.",
+  prefer: "landscape",
+  icon: '<g fill="currentColor">…</g>',
   options: [
-    { id: "grid", label: "Encadrer les blocs", type: "switch", def: true },
-    { id: "cols", label: "Colonnes", type: "select", def: "2",
-      choices: [["2", "2"], ["4", "4"]] }
+    { id: "grid", label: "Encadrer les blocs", type: "switch", def: true }
   ],
 
-  // Facultatif : cadrage propre à l'édition. Sans lui, un an pile.
-  period(start, o) {
-    return { start, end: addDays(plusOneYear(start), -1), note: null };
-  },
+  // Optional. Only when the edition frames its own span.
+  period(start, o) { return { start, end: addDays(plusOneYear(start), -1) }; },
 
   build(c, x) {
-    // x.start / x.end / x.days   la période (Date UTC)
-    // x.inPeriod(dt)             ce jour est-il dedans ?
-    // x.pitch                    entraxe = diamètre + espacement
-    // x.R                        rayon de la pastille
-    // x.fs                       taille de police de base
-    // x.mark                     style de repère courant
-    // x.landscape                la feuille est-elle en paysage ?
-    // x.o                        valeurs des options ci-dessus
-    x.days.forEach((dt, i) => {
-      c.dot((i % 20) * x.pitch, Math.floor(i / 20) * x.pitch);
-    });
-    c.txt(0, -x.fs, "2026", { size: x.fs, weight: 700, fill: "mute" });
+    x.days.forEach((dt, i) => c.dot(col(i), row(i), { day: i }));
   }
 });
 ```
 
-Primitives sur `c` : `dot`, `txt`, `line`, `rect`, `poly`, `disc`. Les couleurs
-sont des noms logiques — `ink`, `mute`, `faint`, `paper`, et `c0`…`cN` pour les
-pastilles. Deux aides maison : `steppedOutline(rows)` pour les contours en
-escalier, et `isoWeek(date)` pour les semaines ISO. Les vignettes de saison
-(`SEASON_MARKS`) montrent comment dessiner une icône en vectoriel plutôt que de
-dépendre d'une police de symboles.
+The context hands you the period, the cell pitch, the sticker radius, a base font
+size and your option values. Primitives are `dot`, `txt`, `line`, `rect`, `poly`
+and `disc`, and colours are logical names. Tag each cell with its day index and
+the filled preview works for free.
 
-L'édition apparaît ensuite toute seule dans les vignettes, avec ses options et sa
-description.
-
-### Ce que couvre exactement une planche
-
-- **Classic** et **Spirale** : un an pile à partir de la date choisie.
-- **Mensuel** : 12 mois entiers, calés sur le 1er du mois de départ.
-- **4 Saisons** : la planche est indexée par numéro de semaine ISO, donc elle
-  contient `7 × (nombre de numéros de semaine distincts)` cases — 364 ou 371,
-  jamais 365 pile. Quand il y a la place on coupe à un an et les cases en trop
-  restent vides : ce sont elles qui dessinent le décrochage du cadre, exactement
-  comme sur la planche d'origine. La semaine de couture sert deux fois — le début
-  de l'année à droite du décrochage, la fin à gauche.
-
-La période réellement couverte est toujours affichée sous la date de début.
+The four existing editions cover most of what you would need to copy. A new one
+shows up in the picker on its own.
 
 ## Licence
 
-[Apache License 2.0](LICENSE) — voir aussi [`NOTICE`](NOTICE).
+Apache 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
 
-Apache plutôt que MIT pour deux raisons qui comptent ici. Elle **oblige à
-conserver les mentions de copyright** dans les copies et les versions dérivées,
-ce qui va de pair avec le pied de planche imprimé sur chaque feuille. Et son
-article 6 **ne concède aucun droit sur le nom ni la marque** : le code se
-réutilise et se modifie librement, mais une version dérivée se publie sous un
-autre nom. Pixel Picole reste Pixel Picole.
+Apache rather than MIT for two reasons. It requires copyright notices to be kept
+in copies and derivatives, which matches the footer printed on every sheet. And
+it grants no rights over the name, so a fork ships under its own.
 
 ---
 

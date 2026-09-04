@@ -1,11 +1,10 @@
 Pixel Picole
 Copyright 2026 Marc Villain (github.com/MarcVillain)
 
-Ce produit inclut des logiciels développés dans le cadre du projet Pixel Picole
-(https://github.com/MarcVillain/pixel-picole).
+https://github.com/MarcVillain/pixel-picole
 
-Distribué sous licence Apache 2.0 — voir le fichier LICENSE.
+Licensed under the Apache License, Version 2.0. See LICENSE.
 
-« Pixel Picole » est le nom du projet. La licence Apache 2.0 ne concède aucun
-droit sur ce nom ni sur la marque (article 6). Une version dérivée peut réutiliser
-le code librement, mais doit être publiée sous un autre nom.
+"Pixel Picole" is the name of the project. The Apache License grants no rights
+over that name or the associated marks (section 6). Forks are free to reuse the
+code and must ship under a different name.

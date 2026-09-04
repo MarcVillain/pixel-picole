@@ -1,6 +1,6 @@
 <!doctype html>
 <!--
-  Pixel Picole — générateur de planches de suivi à pastilles
+  Pixel Picole, générateur de planches de suivi à pastilles
   https://github.com/MarcVillain/pixel-picole
 
   Copyright 2026 Marc Villain
@@ -15,11 +15,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pixel Picole — générateur de trackers</title>
+<title>Pixel Picole, générateur de trackers</title>
 <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgcng9IjI4IiBmaWxsPSIjMWMxZTIxIi8+PGNpcmNsZSBjeD0iNDIiIGN5PSI0MiIgcj0iMjIiIGZpbGw9IiM3ZmIyYzAiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjQyIiByPSIyMiIgZmlsbD0iI2MwNTI0YSIvPjxjaXJjbGUgY3g9IjQyIiBjeT0iODYiIHI9IjIyIiBmaWxsPSIjZTNiODRiIi8+PGNpcmNsZSBjeD0iODYiIGN5PSI4NiIgcj0iMjIiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iLjE2Ii8+PC9zdmc+">
 <style>
 /* ============================================================
-   PIXEL PICOLE — générateur de trackers annuels
+   PIXEL PICOLE, générateur de trackers annuels
    Fichier unique : tout le CSS et le JS sont ici.
    ============================================================ */
 
@@ -304,7 +304,7 @@ input[type=color]{width:100%;height:30px;padding:2px;border:1px solid var(--line
           <div class="f"><label for="ch">Hauteur (mm)</label><input type="number" id="ch" min="50" max="2000" step="1"></div>
         </div>
         <div class="f">
-          <label for="margin">Marge <span style="color:var(--ink-3);font-weight:400">— zone imprimable</span></label>
+          <label for="margin">Marge <span style="color:var(--ink-3);font-weight:400">(zone imprimable)</span></label>
           <div class="slider">
             <input type="range" id="margin" min="0" max="40" step="1">
             <div class="val"><input type="number" id="marginN" min="0" max="40" step="1"></div>
@@ -399,8 +399,8 @@ input[type=color]{width:100%;height:30px;padding:2px;border:1px solid var(--line
         <div class="f" style="margin-top:14px">
           <label for="theme">Partir d'un thème</label>
           <select id="theme"></select>
-          <div class="hint">Remplit le titre et les pastilles. Tout reste modifiable ensuite —
-            couleur, nom, description.</div>
+          <div class="hint">Remplit le titre et les pastilles. Couleur, nom et description
+            restent modifiables ensuite.</div>
         </div>
       </section>
 
@@ -438,10 +438,10 @@ input[type=color]{width:100%;height:30px;padding:2px;border:1px solid var(--line
 <script>
 "use strict";
 /* ==================================================================
-   PIXEL PICOLE — moteur de génération
+   PIXEL PICOLE, moteur de génération
    ------------------------------------------------------------------
    Tout est en millimètres. Une "édition" (design) dessine sa grille
-   dans un Canvas abstrait ; le moteur s'occupe du titre, de la
+   dans un Canvas abstrait. Le moteur s'occupe du titre, de la
    légende, du centrage sur la feuille, du contrôle de taille et de
    l'export. Pour ajouter une édition, voir registerDesign() plus bas.
    ================================================================== */
@@ -553,7 +553,7 @@ function shift(els, dx, dy) {
    ------------------------------------------------------------------
    Le mot principal du titre est composé de carrés, comme les pixels
    semés sur la planche. Chaque glyphe tient dans 5 colonnes sur
-   7 rangées ; les accents se posent sur deux rangées au-dessus.
+   7 rangées. Les accents se posent sur deux rangées au-dessus.
    ------------------------------------------------------------------ */
 const PIXFONT = {
   A:"01110,10001,10001,11111,10001,10001,10001", B:"11110,10001,10001,11110,10001,10001,11110",
@@ -580,7 +580,7 @@ const PIXFONT = {
   "?":"01110,10001,00001,00110,00100,00000,00100", "/":"00001,00010,00010,00100,01000,01000,10000",
   "+":"00000,00100,00100,11111,00100,00100,00000"
 };
-/* accents, en cases (colonne, rangée) — rangées négatives = au-dessus */
+/* accents, en cases (colonne, rangée). Rangée négative = au-dessus */
 const PIXACCENT = {
   "\u0301":[[3,-2],[2,-1]],               // aigu
   "\u0300":[[1,-2],[2,-1]],               // grave
@@ -589,7 +589,7 @@ const PIXACCENT = {
   "\u0303":[[1,-1],[2,-2],[3,-1]],        // tilde
   "\u0327":[[2,7],[1,8]]                  // cédille
 };
-/** découpe une chaîne en glyphes {base, accents} ; null si non gérable */
+/** découpe une chaîne en glyphes {base, accents}, ou null si non gérable */
 function pixelGlyphs(str) {
   const out = [];
   for (const ch of (str || "").toUpperCase().normalize("NFD")) {
@@ -601,7 +601,7 @@ function pixelGlyphs(str) {
 }
 const pixelTextWidth = (g, u) => g.length * 6 * u - u;
 
-/** dessine le texte en carrés ; (x, y) = coin haut gauche de la rangée 0 */
+/** dessine le texte en carrés. (x, y) = coin haut gauche de la rangée 0 */
 function pixelText(c, glyphs, x, y, u, o) {
   const opt = Object.assign({ fill: "ink" }, o);
   glyphs.forEach((g, i) => {
@@ -620,9 +620,8 @@ function pixelText(c, glyphs, x, y, u, o) {
    3. Rendu SVG
    ------------------------------------------------------------------ */
 const SANS = "'Avenir Next','Segoe UI',Inter,Helvetica,system-ui,-apple-system,sans-serif";
-/* Une anglaise élégante quand la machine en a une, sinon une italique de
-   labeur qui reste habillée sans en faire trop. Les mesures ci-dessous
-   s'adaptent à celle qui répond réellement. */
+/* Une anglaise quand la machine en a une, une italique sinon. Les mesures
+   ci-dessous s'adaptent à la police qui répond réellement. */
 const SCRIPT = "'Snell Roundhand','Apple Chancery','Lucida Calligraphy','Segoe Script',"
              + "'URW Chancery L',Z003,'Palatino Linotype',Palatino,'Iowan Old Style',Georgia,serif";
 
@@ -810,9 +809,8 @@ registerDesign({
 });
 
 /* ---------- 4.2 4 SAISONS : semaines ISO groupées par saison ---------- */
-/* Les vignettes de saison sont dessinées en vectoriel : aucune police de
-   symboles à charger, donc un rendu identique à l'écran, à l'impression et
-   dans le SVG exporté. */
+/* Vignettes de saison en vectoriel. Aucune police de symboles à charger,
+   donc un rendu identique à l'écran, à l'impression et dans le SVG. */
 const SEASON_MARKS = {
   fleur(c, x, y, r) {
     for (let i = 0; i < 6; i++) {
@@ -859,9 +857,8 @@ const SEASONS = [
 ];
 
 /** Répartit chaque jour de la période dans une case (semaine ISO, jour).
-    La semaine "couture" — celle où l'on boucle sur l'année — reçoit le début
-    de la période à droite et sa fin à gauche : c'est le décrochage qu'on voit
-    sur la planche dessinée à la main. */
+    La semaine où l'on boucle sur l'année sert deux fois : le début de la
+    période à droite, la fin à gauche. D'où le décrochage du cadre. */
 function weekFrame(x) {
   const rows = new Map();
   const unplaced = [];
@@ -1002,9 +999,9 @@ registerDesign({
     { id:"exact", label:"Couper à un an pile", type:"switch", def:true }
   ],
   /* Une planche en semaines contient 7 × (nombre de numéros de semaine
-     distincts) cases, soit 364 ou 371. On coupe à un an pile quand il y a
-     la place — ce sont les cases vides qui dessinent le décrochage — sinon
-     on remplit les semaines entières. */
+     distincts) cases, soit 364 ou 371. On coupe à un an pile quand il y a la
+     place, et les cases vides dessinent alors le décrochage. Sinon on remplit
+     les semaines entières. */
   period(start, o) {
     const W = weekCount(start), cells = 7 * W;
     const yEnd = addDays(plusOneYear(start), -1);
@@ -1026,7 +1023,7 @@ registerDesign({
     const yw = Math.max.apply(null, probe.map(b => b.yearW));
     const blocks = SEASONS.map(s => seasonBlock(x, s, frame, yw));
     const gx = x.pitch * 2.0, gy = x.pitch * 2.2;
-    // colonne gauche : printemps + été ; colonne droite : automne + hiver
+    // colonne gauche : printemps et été, colonne droite : automne et hiver
     const cw = [Math.max(blocks[0].w, blocks[1].w), Math.max(blocks[2].w, blocks[3].w)];
     const rh = [Math.max(blocks[0].h, blocks[2].h), Math.max(blocks[1].h, blocks[3].h)];
     const at = [[0, 0], [0, rh[0] + gy], [cw[0] + gx, 0], [cw[0] + gx, rh[0] + gy]];
@@ -1120,7 +1117,7 @@ registerDesign({
       th += P / r;                               // avance d'un entraxe d'arc
     }
     // Repères de mois. Deux mois voisins peuvent tomber sur le même rayon à
-    // un tour d'écart : on décale alors le libellé le long de la spirale
+    // un tour d'écart. On décale alors le libellé le long de la spirale
     // jusqu'à ce qu'il ne touche plus le précédent.
     if (o.ticks) {
       const placed = [];
@@ -1161,27 +1158,26 @@ registerDesign({
 /* ------------------------------------------------------------------
    4.5 Thèmes
    ------------------------------------------------------------------
-   Un thème ne fait que pré-remplir le mot du titre et les pastilles.
-   Tout reste modifiable ensuite. Pixel Picole reste la marque de
-   l'outil, quel que soit le thème choisi.
+   Un thème pré-remplit le mot du titre et les pastilles. Tout reste
+   modifiable ensuite. Pixel Picole reste la marque de l'outil.
    ------------------------------------------------------------------ */
 const HUE = { eau:"#7fb2c0", miel:"#e3b84b", brique:"#c0524a", encre:"#2b2b2b", menthe:"#6fae8f", ardoise:"#6b7f8c" };
 const THEMES = {
-  picole:  { word:"Picole",  label:"Picole — verres",            legend:[
+  picole:  { word:"Picole",  label:"Picole · verres",            legend:[
     ["CHILL","0",HUE.eau], ["TCHIN","1–2",HUE.brique], ["DÉRAPAGE","3+",HUE.encre], ["PARTY","soirée",HUE.miel]] },
-  ecrans:  { word:"Écrans",  label:"Écrans — réseaux, téléphone", legend:[
+  ecrans:  { word:"Écrans",  label:"Écrans · réseaux, téléphone", legend:[
     ["AU VERT","0",HUE.menthe], ["TRANQUILLE","< 1 h",HUE.eau], ["SCROLL","1–3 h",HUE.miel], ["GRANDE SESSION","3 h +",HUE.brique]] },
-  series:  { word:"Séries",  label:"Séries — films, vidéos",      legend:[
+  series:  { word:"Séries",  label:"Séries · films, vidéos",      legend:[
     ["JOURNÉE SANS","0",HUE.menthe], ["UN ÉPISODE","1",HUE.eau], ["SOIRÉE","2–3",HUE.miel], ["MARATHON","4 +",HUE.brique]] },
-  bouge:   { word:"Bouge",   label:"Bouge — activité physique",   legend:[
+  bouge:   { word:"Bouge",   label:"Bouge · activité physique",   legend:[
     ["REPOS","0",HUE.eau], ["MARCHE","~ 30 min",HUE.menthe], ["SÉANCE","~ 1 h",HUE.miel], ["GRAND JOUR","2 h +",HUE.brique]] },
-  dodo:    { word:"Dodo",    label:"Dodo — sommeil",              legend:[
+  dodo:    { word:"Dodo",    label:"Dodo · sommeil",              legend:[
     ["COURTE","< 6 h",HUE.brique], ["MOYENNE","6–7 h",HUE.miel], ["BONNE","7–8 h",HUE.eau], ["AU TOP","8 h +",HUE.menthe]] },
-  popote:  { word:"Popote",  label:"Popote — cuisine maison",     legend:[
+  popote:  { word:"Popote",  label:"Popote · cuisine maison",     legend:[
     ["SUR LE POUCE","0",HUE.eau], ["MAISON","1",HUE.menthe], ["GRANDE TABLÉE","2 +",HUE.miel], ["NOUVELLE RECETTE","★",HUE.brique]] },
-  plaisir: { word:"Plaisir", label:"Plaisir — intimité",          legend:[
+  plaisir: { word:"Plaisir", label:"Plaisir · intimité",          legend:[
     ["CALME","0",HUE.eau], ["SOLO","1",HUE.miel], ["À DEUX","2",HUE.brique], ["PLUS","3 +",HUE.encre]] },
-  humeur:  { word:"Humeur",  label:"Humeur — comment ça va",      legend:[
+  humeur:  { word:"Humeur",  label:"Humeur · comment ça va",      legend:[
     ["JOUR DUR","",HUE.ardoise], ["ÇA VA","",HUE.eau], ["BONNE","",HUE.miel], ["LUMINEUSE","",HUE.menthe]] }
 };
 const THEME_ORDER = ["picole","ecrans","series","bouge","dodo","popote","plaisir","humeur"];
@@ -1230,7 +1226,7 @@ function buildHeader(s, design, width, fs) {
   const wMain = glyphs ? pixelTextWidth(glyphs, u)
                        : measureW(main, size, 800, SANS, false) + main.length * size * .02;
   // le mot cursif est mis à l'échelle pour que sa capitale fasse la même
-  // hauteur que le mot en pixels, et posé sur la même ligne de base
+  // hauteur que le mot en pixels, puis posé sur la même ligne de base
   const scrSize = script ? clamp(capH / capRatio(SCRIPT, true, 500), capH, capH * 2.6) : 0;
   const wScr = script ? measureW(script, scrSize, 500, SCRIPT, true) : 0;
   const gap = main && script ? capH * .46 : 0;
@@ -1265,10 +1261,9 @@ function buildFooter(s, fs) {
 }
 
 /** Décor. Les carrés se posent sur une grille invisible au pas du pixel, en
-    petites grappes façon tetromino, réparties dans des zones symétriques : de
-    part et d'autre du titre, aux quatre coins et sur les deux flancs. D'où un
-    semis qui paraît libre mais reste équilibré, et ne mord jamais sur le
-    contenu. */
+    petites grappes façon tetromino, dans des zones symétriques : de part et
+    d'autre du titre, aux quatre coins, sur les deux flancs. Le semis reste
+    équilibré et ne mord jamais sur le contenu. */
 const PIX_SHAPES = [
   [[0,0]], [[0,0]], [[0,0],[1,0]], [[0,0],[0,1]], [[0,0],[1,1]],
   [[0,0],[1,0],[1,1]], [[0,0],[0,1],[1,1]], [[1,0],[0,1],[1,1]], [[0,0],[1,0],[2,0]]
@@ -1324,9 +1319,8 @@ function scatterPixels(s, page, rects, head, seed) {
 }
 
 /* ------------------------------------------------------------------
-   Aperçu rempli : des couleurs plausibles plutôt qu'un tirage à pile ou
-   face. Trois échelles de bruit lissé (la semaine, la saison, l'humeur du
-   jour) plus l'effet vendredi / week-end : on obtient des séries, des
+   Aperçu rempli. Trois échelles de bruit lissé (le jour, la semaine, la
+   saison) plus l'effet vendredi et week-end. On obtient des séries, des
    périodes calmes et des pics, comme sur une vraie planche.
    ------------------------------------------------------------------ */
 function valueNoise(seed) {
@@ -1392,7 +1386,7 @@ function buildLegend(s, width, fs, R) {
   return { els: c.els, h: lines.length * (lineH + lab * .5) };
 }
 
-/** construit la feuille complète ; renvoie tout ce qu'il faut pour l'afficher */
+/** construit la feuille complète et tout ce qu'il faut pour l'afficher */
 function compose(s) {
   const design = DESIGNS[s.design] || DESIGNS.classic;
   const asked = parseISO(s.start);
@@ -1442,7 +1436,7 @@ function compose(s) {
   const inner = { w: page.w - 2 * s.margin, h: page.h - 2 * s.margin };
   const fits = totalW <= inner.w + .01 && totalH <= inner.h + .01;
   const ox = s.margin + (inner.w - totalW) / 2 - left;
-  // centrage optique : un peu plus d'air en bas qu'en haut, l'œil corrige
+  // centrage optique : un peu plus d'air en bas qu'en haut
   const oy = s.margin + clamp((inner.h - blockH) * .45, 0, Math.max(0, inner.h - foot.h - gapF - blockH));
 
   const headEls = shift(head.els, ox, oy);
@@ -1450,7 +1444,7 @@ function compose(s) {
   const legEls  = shift(leg.els, ox, oy + head.h + gapH + ch + gapL);
   const footEls = shift(foot.els, s.margin + inner.w / 2, s.margin + inner.h - foot.h / 2);
 
-  // le décor évite chaque bande séparément : les pixels peuvent border le titre
+  // bandes traitées séparément, pour que les pixels puissent border le titre
   const bands = [headEls, gridEls, legEls, footEls]
     .filter(e => e.length).map(e => bboxOf(e, x.R));
   const hb = headEls.length ? bboxOf(headEls, x.R) : null;
@@ -1467,8 +1461,8 @@ function compose(s) {
 
 /* ------------------------------------------------------------------
    Formes de pastille. Le « diamètre » réglé dans le panneau est toujours
-   l'encombrement de la pastille : côté du carré, largeur du triangle,
-   diamètre du rond. Une case reste donc carrée quelle que soit la forme.
+   l'encombrement : côté du carré, largeur du triangle, diamètre du rond.
+   Une case reste donc carrée quelle que soit la forme.
    ------------------------------------------------------------------ */
 function shapeSVG(shape, x, y, r, attrs) {
   if (shape === "square")
@@ -1622,7 +1616,7 @@ $("#leg-add").onclick = () => {
 
 $("#theme").innerHTML = THEME_ORDER
   .map(k => `<option value="${k}">${esc(THEMES[k].label)}${k === "picole" ? " · défaut" : ""}</option>`).join("")
-  + `<option value="custom">Sur mesure — je remplis moi-même</option>`;
+  + `<option value="custom">Sur mesure, je remplis moi-même</option>`;
 $("#theme").onchange = e => {
   const k = e.target.value;
   S.theme = k;
@@ -1765,7 +1759,7 @@ function draw() {
   if (sheet.fits) {
     const big = biggestStickerThatFits();
     const tight = smallestFormatThatFits();
-    st.innerHTML = `<b><i class="dot"></i>Ça rentre.</b><p>La planche fait <b>${dims}</b> — il reste `
+    st.innerHTML = `<b><i class="dot"></i>Ça rentre.</b><p>La planche fait <b>${dims}</b>. Il reste `
       + `${mm(sheet.inner.w - sheet.totalW)} mm de blanc en largeur et ${mm(sheet.inner.h - sheet.totalH)} mm en hauteur.</p>`
       + `<div class="fixes">`
       + (big ? `<button class="chip" data-fix="sticker" data-v="${big}">Agrandir : pastilles de ${mm(big)} mm</button>` : "")
@@ -1807,17 +1801,17 @@ function draw() {
   const stock = +S.maxSticker === STICKER_STD && +S.maxGap === GAP_STD;
   const note = $("#pitch-note");
   note.className = "note good";
-  note.innerHTML = `Entraxe <b>${mm(sheet.pitch)} mm</b> — pastille <b>${mm(S.sticker)} mm</b>`
+  note.innerHTML = `Entraxe <b>${mm(sheet.pitch)} mm</b> pour une pastille de <b>${mm(S.sticker)} mm</b>`
     + ` + <b>${mm(S.gap)} mm</b> d'air.`
     + (atMax
-        ? (stock ? ` C'est le maximum : au-delà, une gommette de 8 mm ne remplit plus sa case.`
+        ? (stock ? ` C'est le maximum. Au-delà, une gommette de 8 mm ne remplit plus sa case.`
                  : ` C'est le maximum que tu as fixé.`)
-        : ` Plus compact que le plafond ${mm(S.maxSticker)} + ${mm(S.maxGap)} — il faut des pastilles`
+        : ` Plus compact que le plafond ${mm(S.maxSticker)} + ${mm(S.maxGap)}. Il faut des pastilles`
           + ` de <b>${mm(S.sticker)} mm</b>.`
           + ` <button class="chip" id="std-reset">Revenir au plafond</button>`);
   const rst = $("#std-reset");
   if (rst) rst.onclick = () => { S.sticker = S.maxSticker; S.gap = S.maxGap; syncInputs(); render(); };
-  $("#period-hint").innerHTML = `Du <b>${fmtDate(sheet.start)}</b> au <b>${fmtDate(sheet.end)}</b> — ${sheet.days.length} jours.`
+  $("#period-hint").innerHTML = `Du <b>${fmtDate(sheet.start)}</b> au <b>${fmtDate(sheet.end)}</b>, ${sheet.days.length} jours.`
     + (sheet.note ? `<br><span style="color:var(--tchin)">${esc(sheet.note)}</span>` : "")
     + (sheet.x.unplaced ? `<br><span style="color:var(--tchin)">${sheet.x.unplaced} jour(s) sans case.</span>` : "");
 
