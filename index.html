@@ -299,20 +299,27 @@ input[type=color]{width:100%;height:30px;padding:2px;border:1px solid var(--line
       <section class="sec">
         <h2>Stickers <span></span></h2>
         <div class="f">
-          <label for="sticker">Diamètre du sticker (mm)</label>
+          <label for="sticker">Diamètre de la pastille (mm)</label>
           <div class="slider">
-            <input type="range" id="sticker" min="2" max="20" step="0.5">
-            <div class="val"><input type="number" id="stickerN" min="2" max="20" step="0.5"></div>
+            <input type="range" id="sticker" min="2" max="8" step="0.5">
+            <div class="val"><input type="number" id="stickerN" min="2" max="8" step="0.5"></div>
           </div>
         </div>
         <div class="f">
-          <label for="gap">Espace entre stickers (mm)</label>
+          <label for="gap">Air entre pastilles (mm)</label>
           <div class="slider">
-            <input type="range" id="gap" min="1" max="10" step="0.5">
-            <div class="val"><input type="number" id="gapN" min="1" max="10" step="0.5"></div>
+            <input type="range" id="gap" min="0" max="1" step="0.25">
+            <div class="val"><input type="number" id="gapN" min="0" max="1" step="0.25"></div>
           </div>
         </div>
         <div class="note" id="pitch-note"></div>
+        <label class="sw"><input type="checkbox" id="opt-limits"><i></i><span>J'utilise d'autres gommettes</span></label>
+        <div class="row" id="limits" hidden>
+          <div class="f"><label for="maxSticker">Ø maximum (mm)</label>
+            <input type="number" id="maxSticker" min="2" max="40" step="0.5"></div>
+          <div class="f"><label for="maxGap">Air maximum (mm)</label>
+            <input type="number" id="maxGap" min="0" max="20" step="0.25"></div>
+        </div>
         <div class="f">
           <label>Repère imprimé</label>
           <div class="seg" id="mark">
@@ -331,6 +338,7 @@ input[type=color]{width:100%;height:30px;padding:2px;border:1px solid var(--line
           <div class="f"><label for="title">Titre</label><input type="text" id="title" maxlength="24"></div>
           <div class="f"><label for="subtitle">Sous-titre</label><input type="text" id="subtitle" maxlength="28"></div>
         </div>
+        <label class="sw"><input type="checkbox" id="opt-pixtitle"><i></i><span>Titre composé en pixels</span></label>
         <label class="sw"><input type="checkbox" id="opt-legend"><i></i><span>Afficher la légende</span></label>
         <label class="sw"><input type="checkbox" id="opt-confetti"><i></i><span>Décor pixel autour de la planche</span></label>
         <div class="f" id="pixel-size-f">
@@ -341,6 +349,12 @@ input[type=color]{width:100%;height:30px;padding:2px;border:1px solid var(--line
           </div>
         </div>
         <label class="sw"><input type="checkbox" id="opt-guides"><i></i><span>Repères de marge (écran seulement)</span></label>
+        <label class="sw"><input type="checkbox" id="opt-preview"><i></i><span>Aperçu rempli (écran seulement)</span></label>
+        <div class="note good" id="preview-note" hidden>
+          Une année plausible : des séries, des semaines calmes, l'effet vendredi.
+          Ça ne s'imprime pas et ça n'est pas exporté.
+          <button class="chip" id="reseed">↻ Autre tirage</button>
+        </div>
         <div id="design-options"></div>
       </section>
 
@@ -498,6 +512,74 @@ function shift(els, dx, dy) {
 }
 
 /* ------------------------------------------------------------------
+   2.5 Police pixel 5 × 7
+   ------------------------------------------------------------------
+   Le mot principal du titre est composé de carrés, comme les pixels
+   semés sur la planche. Chaque glyphe tient dans 5 colonnes sur
+   7 rangées ; les accents se posent sur deux rangées au-dessus.
+   ------------------------------------------------------------------ */
+const PIXFONT = {
+  A:"01110,10001,10001,11111,10001,10001,10001", B:"11110,10001,10001,11110,10001,10001,11110",
+  C:"01110,10001,10000,10000,10000,10001,01110", D:"11110,10001,10001,10001,10001,10001,11110",
+  E:"11111,10000,10000,11110,10000,10000,11111", F:"11111,10000,10000,11110,10000,10000,10000",
+  G:"01110,10001,10000,10111,10001,10001,01111", H:"10001,10001,10001,11111,10001,10001,10001",
+  I:"11111,00100,00100,00100,00100,00100,11111", J:"00111,00010,00010,00010,00010,10010,01100",
+  K:"10001,10010,10100,11000,10100,10010,10001", L:"10000,10000,10000,10000,10000,10000,11111",
+  M:"10001,11011,10101,10101,10001,10001,10001", N:"10001,11001,10101,10011,10001,10001,10001",
+  O:"01110,10001,10001,10001,10001,10001,01110", P:"11110,10001,10001,11110,10000,10000,10000",
+  Q:"01110,10001,10001,10001,10101,10010,01101", R:"11110,10001,10001,11110,10100,10010,10001",
+  S:"01111,10000,10000,01110,00001,00001,11110", T:"11111,00100,00100,00100,00100,00100,00100",
+  U:"10001,10001,10001,10001,10001,10001,01110", V:"10001,10001,10001,10001,10001,01010,00100",
+  W:"10001,10001,10001,10101,10101,11011,10001", X:"10001,10001,01010,00100,01010,10001,10001",
+  Y:"10001,10001,01010,00100,00100,00100,00100", Z:"11111,00001,00010,00100,01000,10000,11111",
+  "0":"01110,10011,10011,10101,11001,11001,01110", "1":"00100,01100,00100,00100,00100,00100,01110",
+  "2":"01110,10001,00001,00010,00100,01000,11111", "3":"11111,00010,00100,00010,00001,10001,01110",
+  "4":"00010,00110,01010,10010,11111,00010,00010", "5":"11111,10000,11110,00001,00001,10001,01110",
+  "6":"00110,01000,10000,11110,10001,10001,01110", "7":"11111,00001,00010,00100,01000,01000,01000",
+  "8":"01110,10001,10001,01110,10001,10001,01110", "9":"01110,10001,10001,01111,00001,00010,01100",
+  " ":"00000,00000,00000,00000,00000,00000,00000", "-":"00000,00000,00000,11111,00000,00000,00000",
+  ".":"00000,00000,00000,00000,00000,00000,00100", "'":"00100,00100,00000,00000,00000,00000,00000",
+  "!":"00100,00100,00100,00100,00100,00000,00100", "&":"01100,10010,10100,01000,10101,10010,01101",
+  "?":"01110,10001,00001,00110,00100,00000,00100", "/":"00001,00010,00010,00100,01000,01000,10000",
+  "+":"00000,00100,00100,11111,00100,00100,00000"
+};
+/* accents, en cases (colonne, rangée) — rangées négatives = au-dessus */
+const PIXACCENT = {
+  "\u0301":[[3,-2],[2,-1]],               // aigu
+  "\u0300":[[1,-2],[2,-1]],               // grave
+  "\u0302":[[2,-2],[1,-1],[3,-1]],        // circonflexe
+  "\u0308":[[1,-1],[3,-1]],               // tréma
+  "\u0303":[[1,-1],[2,-2],[3,-1]],        // tilde
+  "\u0327":[[2,7],[1,8]]                  // cédille
+};
+/** découpe une chaîne en glyphes {base, accents} ; null si non gérable */
+function pixelGlyphs(str) {
+  const out = [];
+  for (const ch of (str || "").toUpperCase().normalize("NFD")) {
+    if (PIXACCENT[ch]) { if (!out.length) return null; out[out.length - 1].acc.push(ch); continue; }
+    if (!PIXFONT[ch]) return null;
+    out.push({ ch, acc: [] });
+  }
+  return out.length ? out : null;
+}
+const pixelTextWidth = (g, u) => g.length * 6 * u - u;
+
+/** dessine le texte en carrés ; (x, y) = coin haut gauche de la rangée 0 */
+function pixelText(c, glyphs, x, y, u, o) {
+  const opt = Object.assign({ fill: "ink" }, o);
+  glyphs.forEach((g, i) => {
+    const gx = x + i * 6 * u;
+    PIXFONT[g.ch].split(",").forEach((row, ry) => {
+      for (let cx = 0; cx < 5; cx++)
+        if (row[cx] === "1")
+          c.rect(gx + cx * u, y + ry * u, u, u, { fill: opt.fill, stroke: "none", w2: 0 });
+    });
+    g.acc.forEach(a => PIXACCENT[a].forEach(([cx, ry]) =>
+      c.rect(gx + cx * u, y + ry * u, u, u, { fill: opt.fill, stroke: "none", w2: 0 })));
+  });
+}
+
+/* ------------------------------------------------------------------
    3. Rendu SVG
    ------------------------------------------------------------------ */
 const SANS = "'Avenir Next','Segoe UI',Inter,Helvetica,system-ui,-apple-system,sans-serif";
@@ -522,6 +604,10 @@ function renderEls(els, cfg) {
       case "dot": {
         const st = e.mark || mark, r = e.r != null ? e.r : R;
         const c = col(e.fill || "ink");
+        if (cfg.fills && e.day != null && cfg.fills[e.day]) {   // aperçu rempli, écran seulement
+          out.push(`<circle cx="${n3(e.x)}" cy="${n3(e.y)}" r="${n3(r)}" fill="${cfg.fills[e.day]}"/>`);
+          break;
+        }
         if (st === "ring")
           out.push(`<circle${cls} cx="${n3(e.x)}" cy="${n3(e.y)}" r="${n3(r)}" fill="none" stroke="${col("faint")}" stroke-width=".22"${op}/>`);
         else if (st === "cross") {
@@ -625,7 +711,7 @@ registerDesign({
         if (d > daysInMonth(yr, m)) continue;
         const dt = UTC(yr, m, d);
         if (!x.inPeriod(dt)) continue;
-        c.dot(cx(d - 1), cy(m));
+        c.dot(cx(d - 1), cy(m), { day: x.dayIndex(dt) });
       }
     }
 
@@ -785,7 +871,8 @@ function seasonBlock(x, season, frame, forceYearW) {
         let c0 = 7, c1 = -1;
         for (let d = 0; d < 7; d++) {
           if (o.exact && !r.cells[d]) continue;           // hors période : case vide
-          c.dot(gx + P / 2 + d * P, y + P / 2);
+          c.dot(gx + P / 2 + d * P, y + P / 2,
+                r.cells[d] ? { day: x.dayIndex(r.cells[d]) } : null);
           if (d < c0) c0 = d;
           if (d > c1) c1 = d;
         }
@@ -928,7 +1015,8 @@ registerDesign({
         const cell = first + d - 1, col = cell % 7, row = Math.floor(cell / 7);
         const dt = UTC(b.y, b.m, d);
         c.dot(ox + P / 2 + col * P, oy + titleH + headH + P / 2 + row * P,
-              { opacity: x.inPeriod(dt) ? undefined : .28 });
+              { opacity: x.inPeriod(dt) ? undefined : .28,
+                day: x.inPeriod(dt) ? x.dayIndex(dt) : null });
       }
     });
   }
@@ -986,7 +1074,7 @@ registerDesign({
               { size: fs * .9, weight: 800, fill: "mute", rot: flip ? deg + 90 : deg - 90 });
       });
     }
-    pos.forEach(p => c.dot(p[0], p[1]));   // les points passent par-dessus les libellés
+    pos.forEach((p, i) => c.dot(p[0], p[1], { day: i }));  // les points passent par-dessus les libellés
 
     if (o.core) {
       c.txt(0, -fs * .8, fmtDate(x.start), { size: fs * .95, weight: 700, fill: "mute" });
@@ -1062,17 +1150,32 @@ function buildHeader(s, design, width, fs) {
   const size = clamp(width * .058, 5.5, 20);
   const script = words.length > 1 ? words.pop() : "";
   const main = words.join(" ");
-  const wMain = main.length * size * .66, wScr = script.length * size * .52;
-  const gap = main && script ? size * .35 : 0;
+  const glyphs = s.pixelTitle ? pixelGlyphs(main) : null;
+  const u = size / 6.6;                       // côté d'un pixel du titre
+  const capH = glyphs ? 7 * u : size * .72;
+  const wMain = glyphs ? pixelTextWidth(glyphs, u) : main.length * size * .66;
+  const scrSize = glyphs ? capH * 1.42 : size * 1.12;
+  const wScr = script.length * scrSize * .46;
+  const gap = main && script ? capH * .42 : 0;
   const total = wMain + gap + wScr;
+  const top = glyphs ? 2 * u : 0;             // deux rangées libres pour les accents
+
   let x = width / 2 - total / 2;
-  const y = size * .62;
-  if (main) { c.txt(x + wMain / 2, y, main, { size, weight: 800, track: size * .02 }); x += wMain + gap; }
-  if (script) c.txt(x + wScr / 2, y * 1.05, script, { size: size * 1.12, weight: 500, family: "script", italic: true });
+  if (main) {
+    if (glyphs) pixelText(c, glyphs, x, top, u);
+    else c.txt(x + wMain / 2, top + capH * .5, main, { size, weight: 800, track: size * .02 });
+    x += wMain + gap;
+  }
+  if (script)
+    c.txt(x + wScr / 2, top + capH * .62, script,
+          { size: scrSize, weight: 500, family: "script", italic: true });
+
+  const base = top + capH;
   const sub = (s.subtitle || "").trim() || ("· " + design.name.toLowerCase() + " ·");
-  const subSize = clamp(size * .28, 2.4, 5);
-  c.txt(width / 2, size * 1.34, sub, { size: subSize, weight: 700, fill: "mute", track: subSize * .22 });
-  return { els: c.els, h: size * 1.34 + subSize };
+  const subSize = clamp(capH * .26, 2.4, 5);
+  c.txt(width / 2, base + subSize * 1.7, sub,
+        { size: subSize, weight: 700, fill: "mute", track: subSize * .3 });
+  return { els: c.els, h: base + subSize * 2.5 };
 }
 
 /** mention Pixel Picole, en pied de planche */
@@ -1083,44 +1186,93 @@ function buildFooter(s, fs) {
   return { els: c.els, h: size };
 }
 
-/** Décor : des carrés pixel de taille unique. Ils vivent là où ils vivent sur
-    les planches d'origine — de part et d'autre du titre, et en frise le long
-    des bords — jamais au milieu de la feuille, et jamais sur le contenu. */
+/** Décor. Les carrés se posent sur une grille invisible au pas du pixel, en
+    petites grappes façon tetromino, réparties dans des zones symétriques : de
+    part et d'autre du titre, aux quatre coins et sur les deux flancs. D'où un
+    semis qui paraît libre mais reste équilibré, et ne mord jamais sur le
+    contenu. */
+const PIX_SHAPES = [
+  [[0,0]], [[0,0]], [[0,0],[1,0]], [[0,0],[0,1]], [[0,0],[1,1]],
+  [[0,0],[1,0],[1,1]], [[0,0],[0,1],[1,1]], [[1,0],[0,1],[1,1]], [[0,0],[1,0],[2,0]]
+];
 function scatterPixels(s, page, rects, head, seed) {
   if (!s.confetti || !(s.pixel > 0)) return [];
-  const size = +s.pixel;
-  const edge = clamp(s.margin * .45, 3.5, 10);
-  const pad = Math.max(size * 1.5, 6);
-  const ring = clamp(s.margin + size * 2.2, 14, 46);
-  const target = clamp(Math.round((page.w + page.h) / 34), 8, 28);
+  const u = +s.pixel, m = s.margin, W = page.w, H = page.h;
+  const edge = clamp(m * .4, 3, 9);
+  const pad = Math.max(u * 2.2, 5);
   const R = rng(seed);
   const put = [];
-  const free = (x, y) => {
-    if (x < edge || y < edge || x + size > page.w - edge || y + size > page.h - edge) return false;
+  const snap = v => Math.round(v / u) * u;
+  const freeCell = (x, y) => {
+    if (x < edge || y < edge || x + u > W - edge || y + u > H - edge) return false;
     for (const r of rects)
-      if (x < r.x1 + pad && x + size > r.x0 - pad && y < r.y1 + pad && y + size > r.y0 - pad) return false;
-    return true;
+      if (x < r.x1 + pad && x + u > r.x0 - pad && y < r.y1 + pad && y + u > r.y0 - pad) return false;
+    return put.every(q => Math.abs(q[0] - x) > .01 || Math.abs(q[1] - y) > .01);
   };
-  const inRing = (x, y) => x < ring || y < ring || x + size > page.w - ring || y + size > page.h - ring;
-  const spaced = (x, y) => put.every(p => Math.abs(p[0] - x) >= size * 2 || Math.abs(p[1] - y) >= size * 2);
-  const near = [[size, 0], [-size, 0], [0, size], [0, -size], [size, size], [-size, -size]];
-  const bandH = head ? head.y1 - head.y0 : 0;
-  for (let t = 0; t < 1200 && put.length < target; t++) {
-    const aroundTitle = head && bandH > size && R() < .55;
-    const x = edge + R() * (page.w - 2 * edge - size);
-    const y = aroundTitle ? head.y0 + R() * (bandH - size)
-                          : edge + R() * (page.h - 2 * edge - size);
-    if (!free(x, y) || !spaced(x, y)) continue;
-    if (!aroundTitle && !inRing(x, y)) continue;
-    put.push([x, y]);
-    if (R() < .32) {                                   // parfois un carré accolé
-      const d = near[Math.floor(R() * near.length)];
-      const nx = x + d[0], ny = y + d[1];
-      if (free(nx, ny) && put.every(q => Math.abs(q[0] - nx) > .01 || Math.abs(q[1] - ny) > .01)) put.push([nx, ny]);
+  const spacedFrom = (x, y, d) => put.every(q => Math.hypot(q[0] - x, q[1] - y) >= d);
+
+  const band = head ? [head.y0 - u * 3, head.y1 + u * 2] : null;
+  const zones = [];
+  if (band) {
+    zones.push({ r: [edge, band[0], head.x0 - u * 3, band[1]], n: 3 });
+    zones.push({ r: [head.x1 + u * 3, band[0], W - edge, band[1]], n: 3 });
+  }
+  const cw = W * .3, chh = H * .17;                    // coins
+  zones.push({ r: [edge, edge, edge + cw, edge + chh], n: 1 });
+  zones.push({ r: [W - edge - cw, edge, W - edge, edge + chh], n: 1 });
+  zones.push({ r: [edge, H - edge - chh, edge + cw, H - edge], n: 1 });
+  zones.push({ r: [W - edge - cw, H - edge - chh, W - edge, H - edge], n: 1 });
+  zones.push({ r: [edge, H * .32, edge + m * 1.4, H * .68], n: 1 });   // flancs
+  zones.push({ r: [W - edge - m * 1.4, H * .32, W - edge, H * .68], n: 1 });
+
+  for (const z of zones) {
+    const [zx0, zy0, zx1, zy1] = z.r;
+    if (zx1 - zx0 < u * 3 || zy1 - zy0 < u * 3) continue;
+    for (let k = 0; k < z.n; k++) {
+      for (let t = 0; t < 60; t++) {
+        const x = snap(zx0 + R() * (zx1 - zx0 - u * 3));
+        const y = snap(zy0 + R() * (zy1 - zy0 - u * 3));
+        if (!spacedFrom(x, y, u * 5)) continue;
+        const sh = PIX_SHAPES[Math.floor(R() * PIX_SHAPES.length)];
+        const cells = sh.map(([a, b]) => [x + a * u, y + b * u]);
+        if (!cells.every(cc => freeCell(cc[0], cc[1]))) continue;
+        cells.forEach(cc => put.push(cc));
+        break;
+      }
     }
   }
-  return put.map(p => ({ t:"rect", x:p[0], y:p[1], w:size, h:size, r:0,
+  return put.map(q => ({ t:"rect", x:q[0], y:q[1], w:u, h:u, r:0,
                          fill:"ink", stroke:"none", w2:0, opacity:.9 }));
+}
+
+/* ------------------------------------------------------------------
+   Aperçu rempli : des couleurs plausibles plutôt qu'un tirage à pile ou
+   face. Trois échelles de bruit lissé (la semaine, la saison, l'humeur du
+   jour) plus l'effet vendredi / week-end : on obtient des séries, des
+   périodes calmes et des pics, comme sur une vraie planche.
+   ------------------------------------------------------------------ */
+function valueNoise(seed) {
+  const h = i => { const v = Math.sin(i * 127.1 + seed * 311.7) * 43758.5453; return v - Math.floor(v); };
+  return t => { const i = Math.floor(t), f = t - i, k = f * f * (3 - 2 * f); return h(i) * (1 - k) + h(i + 1) * k; };
+}
+function previewFill(s, days, seed) {
+  const n = valueNoise(seed), n2 = valueNoise(seed + 7.3), n3 = valueNoise(seed + 19.1);
+  const N = s.legend.length;
+  const v = days.map((dt, i) => {
+    const wd = dowMon(dt);
+    return (.40 * n(i / 7.5) + .30 * n2(i / 38) + .16 * n3(i / 2.2)) / .86
+         + (wd === 4 ? .09 : wd >= 5 ? .15 : 0);
+  });
+  // seuils pris en quantiles : la première pastille domine, la dernière reste rare,
+  // quelle que soit l'amplitude réelle du bruit
+  const share = [.58, .84, .94, .975, .99, .997];
+  const sorted = v.slice().sort((a, b) => a - b);
+  const cut = share.slice(0, N - 1).map(q => sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))]);
+  return v.map(t => {
+    let k = 0;
+    for (let j = 0; j < cut.length; j++) if (t > cut[j]) k = j + 1;
+    return s.legend[Math.min(k, N - 1)].color;
+  });
 }
 
 function buildLegend(s, width, fs, R) {
@@ -1182,7 +1334,8 @@ function compose(s) {
     start, end, days, pitch, R: s.sticker / 2,
     fs: clamp(pitch * .42, 1.9, 4.6),
     mark: s.mark, o, landscape: page.w > page.h,
-    inPeriod: dt => dt.getTime() >= start.getTime() && dt.getTime() <= end.getTime()
+    inPeriod: dt => dt.getTime() >= start.getTime() && dt.getTime() <= end.getTime(),
+    dayIndex: dt => Math.round((dt.getTime() - start.getTime()) / MS)
   };
 
   const c = new Canvas();
@@ -1211,8 +1364,8 @@ function compose(s) {
   const inner = { w: page.w - 2 * s.margin, h: page.h - 2 * s.margin };
   const fits = totalW <= inner.w + .01 && totalH <= inner.h + .01;
   const ox = s.margin + (inner.w - totalW) / 2 - left;
-  // bloc centré sur toute la hauteur utile, mais jamais collé au pied de planche
-  const oy = s.margin + clamp((inner.h - blockH) / 2, 0, Math.max(0, inner.h - foot.h - gapF - blockH));
+  // centrage optique : un peu plus d'air en bas qu'en haut, l'œil corrige
+  const oy = s.margin + clamp((inner.h - blockH) * .45, 0, Math.max(0, inner.h - foot.h - gapF - blockH));
 
   const headEls = shift(head.els, ox, oy);
   const gridEls = shift(content, ox, oy + head.h + gapH);
@@ -1223,7 +1376,8 @@ function compose(s) {
   const bands = [headEls, gridEls, legEls, footEls]
     .filter(e => e.length).map(e => bboxOf(e, x.R));
   const hb = headEls.length ? bboxOf(headEls, x.R) : null;
-  const titleBand = hb ? { y0: hb.y0 - (hb.y1 - hb.y0) * .55, y1: hb.y1 + (hb.y1 - hb.y0) * .35 } : null;
+  const titleBand = hb ? { x0: hb.x0, x1: hb.x1,
+                           y0: hb.y0 - (hb.y1 - hb.y0) * .5, y1: hb.y1 + (hb.y1 - hb.y0) * .3 } : null;
   const deco = scatterPixels(s, page, bands, titleBand,
                              (s.title || "").length * 31 + Math.round(cw) * 7 + 17);
 
@@ -1235,7 +1389,8 @@ function compose(s) {
 
 function toSVG(sheet, s, forExport) {
   const pal = makePalette(s);
-  const cfg = { pal, mark: s.mark, R: s.sticker / 2 };
+  const cfg = { pal, mark: s.mark, R: s.sticker / 2,
+                fills: (!forExport && s.preview) ? previewFill(s, sheet.days, s.previewSeed || 1) : null };
   let guides = "";
   if (s.guides) guides = `<rect class="screen-only" x="${n3(s.margin)}" y="${n3(s.margin)}" width="${n3(sheet.page.w-2*s.margin)}" height="${n3(sheet.page.h-2*s.margin)}" fill="none" stroke="${sheet.fits?"#b9c6cf":"#c0524a"}" stroke-width=".25" stroke-dasharray="2 2"/>`;
   const body = renderEls(sheet.els, cfg);
@@ -1256,9 +1411,11 @@ function defaults() {
   return {
     design:"classic", start: isoStr(UTC(t.getFullYear(), t.getMonth(), 1)),
     format:"a3", orient:"landscape", cw:210, ch:297, margin:14,
-    sticker:STICKER_STD, gap:GAP_STD, mark:"dot", pixel:6,
+    sticker:STICKER_STD, gap:GAP_STD, maxSticker:STICKER_STD, maxGap:GAP_STD,
+    mark:"dot", pixel:3,
     theme:"picole", title:"PIXEL Picole", subtitle:"",
-    legendOn:true, confetti:true, guides:true,
+    legendOn:true, confetti:true, guides:true, pixelTitle:true,
+    preview:false, previewSeed:1,
     legend: themeLegend("picole"), opts:{}
   };
 }
@@ -1267,7 +1424,11 @@ try {
   const saved = JSON.parse(localStorage.getItem(STORE) || "null");
   if (saved && typeof saved === "object") S = Object.assign(S, saved);
   if (!Array.isArray(S.legend) || !S.legend.length) S.legend = themeLegend("picole");
-  if (!(S.pixel > 0)) S.pixel = 6;
+  if (!(S.pixel > 0)) S.pixel = 3;
+  if (!(S.maxSticker > 0)) S.maxSticker = STICKER_STD;
+  if (!(S.maxGap >= 0)) S.maxGap = GAP_STD;
+  S.sticker = clamp(S.sticker, 1, S.maxSticker);
+  S.gap = clamp(S.gap, 0, S.maxGap);
   if (!THEMES[S.theme]) S.theme = "picole";
   if (!DESIGNS[S.design]) S.design = "classic";
   if (!S.opts) S.opts = {};
@@ -1380,7 +1541,7 @@ function seg(sel, key, after) {
 }
 function pair(rangeSel, numSel, key) {
   const r = $(rangeSel), n = $(numSel);
-  const set = v => { S[key] = clamp(+v || 0, +r.min, +r.max); syncInputs(); render(); };
+  const set = v => { S[key] = clamp(+v || 0, +r.min, +r.max); syncInputs(); render(); };   // bornes relues à chaque fois
   r.oninput = () => set(r.value);
   n.oninput = () => set(n.value);
   n.onblur  = () => syncInputs();
@@ -1392,8 +1553,12 @@ function syncInputs() {
   $("#custom-size").hidden = S.format !== "custom";
   $("#cw").value = S.cw; $("#ch").value = S.ch;
   $("#margin").value = S.margin; $("#marginN").value = S.margin;
-  $("#sticker").value = S.sticker; $("#stickerN").value = S.sticker;
-  $("#gap").value = S.gap; $("#gapN").value = S.gap;
+  for (const sel of ["#sticker", "#stickerN"]) { $(sel).max = S.maxSticker; $(sel).value = S.sticker; }
+  for (const sel of ["#gap", "#gapN"]) { $(sel).max = S.maxGap; $(sel).value = S.gap; }
+  $("#maxSticker").value = S.maxSticker; $("#maxGap").value = S.maxGap;
+  const custom = S.maxSticker !== STICKER_STD || S.maxGap !== GAP_STD;
+  $("#opt-limits").checked = custom || S.showLimits;
+  $("#limits").hidden = !$("#opt-limits").checked;
   $("#pixel").value = S.pixel; $("#pixelN").value = S.pixel;
   $("#pixel-size-f").hidden = !S.confetti;
   $("#theme").value = S.theme;
@@ -1402,6 +1567,9 @@ function syncInputs() {
   $("#opt-legend").checked = S.legendOn;
   $("#opt-confetti").checked = S.confetti;
   $("#opt-guides").checked = S.guides;
+  $("#opt-pixtitle").checked = S.pixelTitle;
+  $("#opt-preview").checked = S.preview;
+  $("#preview-note").hidden = !S.preview;
   $("#orient").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === S.orient));
   $("#mark").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === S.mark));
 }
@@ -1415,6 +1583,24 @@ $("#subtitle").oninput = e => { S.subtitle = e.target.value; render(); };
 $("#opt-legend").onchange = e => { S.legendOn = e.target.checked; render(); };
 $("#opt-confetti").onchange = e => { S.confetti = e.target.checked; syncInputs(); render(); };
 $("#opt-guides").onchange = e => { S.guides = e.target.checked; render(); };
+$("#opt-pixtitle").onchange = e => { S.pixelTitle = e.target.checked; render(); };
+$("#opt-preview").onchange = e => { S.preview = e.target.checked; syncInputs(); render(); };
+$("#reseed").onclick = () => { S.previewSeed = (S.previewSeed || 1) + 1; render(); };
+$("#opt-limits").onchange = e => {
+  S.showLimits = e.target.checked;
+  if (!e.target.checked) { S.maxSticker = STICKER_STD; S.maxGap = GAP_STD; }
+  S.sticker = clamp(S.sticker, 1, S.maxSticker);
+  S.gap = clamp(S.gap, 0, S.maxGap);
+  syncInputs(); render();
+};
+$("#maxSticker").oninput = e => {
+  S.maxSticker = clamp(+e.target.value || STICKER_STD, 2, 40);
+  S.sticker = clamp(S.sticker, 1, S.maxSticker); syncInputs(); render();
+};
+$("#maxGap").oninput = e => {
+  S.maxGap = clamp(+e.target.value || 0, 0, 20);
+  S.gap = clamp(S.gap, 0, S.maxGap); syncInputs(); render();
+};
 seg("#orient", "orient");
 seg("#mark", "mark");
 pair("#margin", "#marginN", "margin");
@@ -1430,8 +1616,7 @@ function maxStickerThatFits() {
   return null;
 }
 function biggestStickerThatFits() {
-  const max = +$("#sticker").max;
-  for (let v = max; v >= +S.sticker + 1; v -= .5)
+  for (let v = +S.maxSticker; v >= +S.sticker + 1; v -= .5)
     if (compose(withS({ sticker: v })).fits) return Math.round(v * 10) / 10;
   return null;
 }
@@ -1472,11 +1657,17 @@ function draw() {
   const dims = `${mm(sheet.totalW)} × ${mm(sheet.totalH)} mm`;
   if (sheet.fits) {
     const big = biggestStickerThatFits();
+    const tight = smallestFormatThatFits();
     st.innerHTML = `<b><i class="dot"></i>Ça rentre.</b><p>La planche fait <b>${dims}</b> — il reste `
       + `${mm(sheet.inner.w - sheet.totalW)} mm de blanc en largeur et ${mm(sheet.inner.h - sheet.totalH)} mm en hauteur.</p>`
-      + (big ? `<div class="fixes"><button class="chip" data-fix="sticker" data-v="${big}">Remplir la page : stickers de ${mm(big)} mm</button></div>` : "");
+      + `<div class="fixes">`
+      + (big ? `<button class="chip" data-fix="sticker" data-v="${big}">Agrandir : pastilles de ${mm(big)} mm</button>` : "")
+      + (tight ? `<button class="chip" data-fix="format" data-v="${tight.format}|${tight.orient}">Format plus juste : ${FORMATS[tight.format].name.split(" ")[0]} ${tight.orient === "landscape" ? "paysage" : "portrait"}</button>` : "")
+      + `</div>`;
     st.querySelectorAll(".chip").forEach(b => b.onclick = () => {
-      S.sticker = +b.dataset.v; syncInputs(); render();
+      if (b.dataset.fix === "sticker") S.sticker = +b.dataset.v;
+      else { const [k, o] = b.dataset.v.split("|"); S.format = k; S.orient = o; }
+      syncInputs(); render();
     });
   } else {
     const sug = maxStickerThatFits(), fmt = smallestFormatThatFits();
@@ -1505,19 +1696,20 @@ function draw() {
     ["Cases", `${sheet.days.length} jours`]
   ].map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
 
-  const std = +S.sticker >= STICKER_STD && +S.gap >= GAP_STD;
+  const atMax = +S.sticker === +S.maxSticker && +S.gap === +S.maxGap;
+  const stock = +S.maxSticker === STICKER_STD && +S.maxGap === GAP_STD;
   const note = $("#pitch-note");
-  note.className = "note " + (std ? "good" : "warn");
-  note.innerHTML = std
-    ? `Entraxe <b>${mm(sheet.pitch)} mm</b> — pastilles de <b>${mm(S.sticker)} mm</b> avec au moins
-       <b>${mm(S.gap)} mm</b> d'air. Conforme au standard 8 + 1 : des gommettes du commerce
-       se collent sans se toucher.`
-    : `Entraxe <b>${mm(sheet.pitch)} mm</b> — en dessous du standard 8 + 1.
-       Des gommettes de 8 mm se chevaucheraient : prévois des pastilles de
-       <b>${mm(Math.max(2, sheet.pitch - GAP_STD))} mm</b> au plus, ou remplis au crayon.
-       <button class="chip" id="std-reset">Revenir au 8 + 1</button>`;
+  note.className = "note good";
+  note.innerHTML = `Entraxe <b>${mm(sheet.pitch)} mm</b> — pastille <b>${mm(S.sticker)} mm</b>`
+    + ` + <b>${mm(S.gap)} mm</b> d'air.`
+    + (atMax
+        ? (stock ? ` C'est le maximum : au-delà, une gommette de 8 mm ne remplit plus sa case.`
+                 : ` C'est le maximum que tu as fixé.`)
+        : ` Plus compact que le plafond ${mm(S.maxSticker)} + ${mm(S.maxGap)} — il faut des pastilles`
+          + ` de <b>${mm(S.sticker)} mm</b>.`
+          + ` <button class="chip" id="std-reset">Revenir au plafond</button>`);
   const rst = $("#std-reset");
-  if (rst) rst.onclick = () => { S.sticker = STICKER_STD; S.gap = GAP_STD; syncInputs(); render(); };
+  if (rst) rst.onclick = () => { S.sticker = S.maxSticker; S.gap = S.maxGap; syncInputs(); render(); };
   $("#period-hint").innerHTML = `Du <b>${fmtDate(sheet.start)}</b> au <b>${fmtDate(sheet.end)}</b> — ${sheet.days.length} jours.`
     + (sheet.note ? `<br><span style="color:var(--tchin)">${esc(sheet.note)}</span>` : "")
     + (sheet.x.unplaced ? `<br><span style="color:var(--tchin)">${sheet.x.unplaced} jour(s) sans case.</span>` : "");

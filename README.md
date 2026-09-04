@@ -62,10 +62,22 @@ Ouvre `index.html` dans ton navigateur. Puis :
 1. **Choisis une édition** — Classic, 4 Saisons, Mensuel ou Spirale.
 2. **Pose ta date de début** — n'importe quel jour de l'année, pas seulement le 1er janvier.
 3. **Choisis ton papier** — A6 → A1, Letter, Legal, Tabloid, ou sur mesure.
-4. **Vérifie les pastilles** — le standard est 8 mm de diamètre, 1 mm d'air.
-5. **Imprime à 100 %** (« taille réelle », surtout pas « ajuster à la page »), ou exporte en SVG.
+4. **Vérifie les pastilles** — 8 mm de diamètre et 1 mm d'air, c'est le maximum.
+5. **Regarde ce que ça donnera** — l'*aperçu rempli* colorie une année plausible.
+6. **Imprime à 100 %** (« taille réelle », surtout pas « ajuster à la page »), ou exporte en SVG.
 
 Les réglages restent en mémoire dans le navigateur. Rien ne part ailleurs.
+
+### L'aperçu rempli
+
+Une planche vide ne dit rien de ce qu'elle donnera au mur. L'aperçu la remplit
+d'une année crédible : pas un tirage à pile ou face, mais trois échelles de bruit
+lissé — l'humeur du jour, la semaine, la saison — plus l'effet vendredi et
+week-end. On y voit des séries, des mois calmes, des périodes chargées : de quoi
+juger un jeu de couleurs avant d'acheter les gommettes. Le bouton *↻ Autre tirage*
+en propose une autre.
+
+C'est un aperçu écran : il ne s'imprime pas et n'est pas exporté.
 
 ### Les quatre éditions
 
@@ -79,18 +91,35 @@ Les réglages restent en mémoire dans le navigateur. Rien ne part ailleurs.
 ### La contrainte des 8 mm
 
 Une gommette de 8 mm avec 1 mm d'air impose un **entraxe de 9 mm** entre deux
-centres. Ce n'est pas négociable si on veut pouvoir coller sans déborder — et
-c'est ce qui décide de la taille du papier.
+centres. C'est un **plafond**, pas un objectif : au-delà, la gommette flotte dans
+sa case et la grille se délave. Les curseurs s'arrêtent donc à 8 et à 1.
 
-Une grille Classic, c'est `31 × 9 ≈ 280 mm` de large : **elle ne rentre pas sur un
-A4.** Le générateur le dit franchement plutôt que de rétrécir en douce, et propose
-en un clic soit la taille de pastille qui passe, soit le format juste au-dessus.
-Quand il reste de la place, il propose l'inverse : agrandir pour remplir la
-feuille. Le bandeau sous les réglages affiche en permanence l'entraxe réel et s'il
-est conforme au standard.
+En dessous, tout est permis — gommettes de 6 mm, ou remplissage au crayon de
+couleur, qui marche très bien. Le bandeau sous les curseurs affiche en permanence
+l'entraxe réel et rappelle où on en est par rapport au plafond.
 
-En dessous de 8 mm, on trouve des gommettes de 6 mm en papeterie — ou on remplit
-au crayon de couleur, ce qui marche très bien aussi.
+Si tu utilises d'autres gommettes, *J'utilise d'autres gommettes* relève les deux
+plafonds. C'est volontairement rangé derrière un interrupteur : la valeur par
+défaut est celle qui donne une belle planche.
+
+Conséquence directe : **c'est le papier qui s'adapte à la grille**, pas l'inverse.
+Une grille Classic, c'est `31 × 9 ≈ 280 mm` de large, donc **elle ne rentre pas sur
+un A4**. Le générateur le dit franchement plutôt que de rétrécir en douce, et
+propose en un clic le format qui convient — le plus petit qui passe quand il reste
+trop de blanc, le format au-dessus quand ça déborde.
+
+### Le décor
+
+Le mot principal du titre est **composé de carrés** — une police pixel 5 × 7
+dessinée dans le fichier, accents compris. Aucune police à charger : le titre est
+identique à l'écran, à l'impression et dans le SVG exporté.
+
+Les carrés semés autour de la planche sont les mêmes, en 3 mm. Ils ne tombent pas
+au hasard : ils se posent sur une grille invisible au pas du pixel, en petites
+grappes façon tetromino, dans des zones symétriques — de part et d'autre du titre,
+aux quatre coins, sur les deux flancs. D'où un semis qui paraît libre mais reste
+équilibré, et qui ne mord jamais sur la grille, le titre ou la légende. Les deux
+sont désactivables.
 
 ### Thèmes
 
@@ -102,6 +131,23 @@ séries, activité physique, sommeil, cuisine maison, intimité, humeur.
 Ce ne sont que des points de départ. Le vrai réglage, c'est celui d'après : change
 les noms, les couleurs, les descriptions, ajoute ou retire des pastilles. Une
 planche à toi vaut mieux qu'une planche bien nommée.
+
+## Publier sa propre version
+
+Le générateur est un fichier statique : n'importe quel hébergeur fait l'affaire.
+
+**GitHub Pages, en trois clics.** Le dépôt contient déjà
+[`.github/workflows/pages.yml`](.github/workflows/pages.yml). Va dans
+**Settings → Pages**, choisis **Source : GitHub Actions**, et pousse sur la branche
+par défaut. Le site sort sur `https://<compte>.github.io/pixel-picole/`, et se
+remet à jour à chaque push.
+
+**Sans rien installer.** *Settings → Pages → Source : Deploy from a branch*,
+branche `main`, dossier `/ (root)` : `index.html` est servi tel quel.
+
+**Ailleurs.** Netlify, Vercel, Cloudflare Pages, un dossier sur un serveur, une clé
+USB : glisse `index.html`, il n'y a rien à construire. C'est aussi la manière la
+plus simple de partager l'outil — envoyer le fichier suffit.
 
 ## Contribuer
 
