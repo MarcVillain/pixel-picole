@@ -77,6 +77,10 @@ button,input,select,textarea{font:inherit;color:inherit}
 /* ---------- structure ---------- */
 .app{display:grid;grid-template-columns:360px minmax(0,1fr);height:100vh;overflow:hidden}
 @supports (height:100dvh){.app{height:100dvh}}
+/* clip au lieu de hidden : un conteneur hidden reste défilable par le
+   navigateur, qui peut alors pousser toute l'interface hors de l'écran sans
+   laisser de barre pour revenir. clip ne défile pas du tout. */
+@supports (overflow:clip){.app{overflow:clip}}
 .side{
   background:var(--panel);border-right:1px solid var(--line);
   display:flex;flex-direction:column;min-height:0;position:relative;z-index:2;
@@ -158,7 +162,7 @@ input[type=color]{width:100%;height:30px;padding:2px;border:1px solid var(--line
 
 /* switch */
 .sw{display:flex;align-items:center;gap:10px;padding:7px 0;cursor:pointer;user-select:none}
-.sw input{position:absolute;opacity:0;pointer-events:none}
+.sw input{width:0;height:0;margin:0;padding:0;border:0;opacity:0;flex:none;pointer-events:none;appearance:none;-webkit-appearance:none}
 .sw i{width:34px;height:20px;border-radius:99px;background:var(--line-2);flex:none;position:relative;transition:.2s var(--ease)}
 .sw i::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:.2s var(--ease)}
 .sw input:checked + i{background:var(--accent)}
@@ -1994,6 +1998,13 @@ try {
   const th = localStorage.getItem(STORE + "/theme");
   if (th) document.documentElement.setAttribute("data-theme", th);
 } catch (e) {}
+
+/* Filet : si le navigateur fait tout de même défiler le cadre pour amener un
+   élément focalisé à l'écran, on revient aussitôt en haut. */
+const appEl = document.querySelector(".app");
+appEl.addEventListener("scroll", () => {
+  if (appEl.scrollTop || appEl.scrollLeft) { appEl.scrollTop = 0; appEl.scrollLeft = 0; }
+}, { passive: true });
 
 /* ---------- démarrage ---------- */
 [["start","start"], ["format","format"], ["cw","cw"], ["ch","ch"], ["margin","margin"],
