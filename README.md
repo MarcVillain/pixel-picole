@@ -8,6 +8,8 @@
 
 Printable tracker sheets. A single HTML file with no dependencies.
 
+### [Open the generator](https://marcvillain.github.io/pixel-picole/)
+
 <img src="assets/classic.png" width="88%" alt="Classique sheet">
 
 <img src="assets/4-saisons.png" width="43%" alt="4 Saisons sheet">
@@ -41,9 +43,13 @@ or what you want to see grow.
 
 <img src="assets/app.png" width="100%" alt="The generator">
 
-Open `index.html` in a browser. Pick an edition, a start date, a paper size and a
-sticker shape. The filled preview draws a plausible year so you can judge the
-colours before buying anything. Print at full size, or export SVG.
+[Open the generator](https://marcvillain.github.io/pixel-picole/) in any browser,
+or download `index.html` and open it from your machine. It runs offline and needs
+no account.
+
+Pick an edition, a start date, a paper size and a sticker shape. The filled
+preview draws a plausible year so you can judge the colours before buying
+anything. Print at full size, or export SVG.
 
 The title takes any of several fonts, and the first word can be set in pixel
 squares. Any setting that differs from its default shows a small arrow next to
@@ -80,13 +86,8 @@ list and is off by default.
 ### Themes
 
 Pixel Picole is the default. A selector fills in the title and stickers for other
-subjects: screens, series, exercise, sleep, cooking, intimacy, mood. Rename,
-recolour, add or remove stickers from there.
-
-## Publishing
-
-Enable Pages with GitHub Actions as the source, then push. The workflow is in the
-repo. Any static host works, and so does sending someone the file.
+subjects: tobacco, screens, series, exercise, sleep, cooking, intimacy, mood.
+Rename, recolour, add or remove stickers from there.
 
 ## Adding an edition
 
@@ -131,8 +132,6 @@ reference.
 - Test across start dates. Leap years and mid-month starts are where it breaks.
   Every day of the period must land in exactly one cell.
 - Keep the wording kind. No shaming language in labels, themes or the interface.
-
-Code and comments are in French.
 
 ## Licence
 
