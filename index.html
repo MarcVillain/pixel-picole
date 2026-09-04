@@ -173,6 +173,14 @@ input[type=color]{width:100%;height:30px;padding:2px;border:1px solid var(--line
   color:var(--ink-3);font-size:15px;line-height:1;transition:.16s var(--ease);padding:0}
 .leg-row .del:hover{color:var(--tchin);border-color:var(--tchin)}
 .leg-row .del:disabled{opacity:.3;cursor:not-allowed}
+.rst{
+  border:0;background:transparent;cursor:pointer;color:var(--ink-3);font-size:13px;line-height:1;
+  padding:1px 4px;margin-left:6px;border-radius:6px;transition:.15s var(--ease);flex:none
+}
+.rst:hover{color:var(--accent);background:color-mix(in oklab,var(--accent) 14%,transparent)}
+.f>label{display:flex;align-items:center}
+.sw .rst{margin-left:auto}
+.sec>h2 .rst{margin-left:0;color:var(--ink-3)}
 .leg-add{width:100%;padding:7px;border:1px dashed var(--line-2);background:transparent;border-radius:var(--radius-sm);
   cursor:pointer;font-size:12px;font-weight:600;color:var(--ink-2);transition:.16s var(--ease)}
 .leg-add:hover{border-color:var(--accent);color:var(--accent)}
@@ -293,7 +301,7 @@ input[type=color]{width:100%;height:30px;padding:2px;border:1px solid var(--line
             <select id="format"></select>
           </div>
           <div class="f">
-            <label>Orientation</label>
+            <label id="lab-orient">Orientation</label>
             <div class="seg" id="orient">
               <button data-v="portrait">Portrait</button>
               <button data-v="landscape">Paysage</button>
@@ -338,7 +346,7 @@ input[type=color]{width:100%;height:30px;padding:2px;border:1px solid var(--line
             <input type="number" id="maxGap" min="0" max="20" step="0.25"></div>
         </div>
         <div class="f">
-          <label>Forme de la pastille</label>
+          <label id="lab-shape">Forme de la pastille</label>
           <div class="seg" id="shape">
             <button data-v="circle">Rond</button>
             <button data-v="square">Carré</button>
@@ -346,7 +354,7 @@ input[type=color]{width:100%;height:30px;padding:2px;border:1px solid var(--line
           </div>
         </div>
         <div class="f">
-          <label>Repère imprimé</label>
+          <label id="lab-mark">Repère imprimé</label>
           <div class="seg" id="mark">
             <button data-v="dot">Point</button>
             <button data-v="outline">Contour</button>
@@ -373,7 +381,11 @@ input[type=color]{width:100%;height:30px;padding:2px;border:1px solid var(--line
           <div class="f"><label for="title">Titre</label><input type="text" id="title" maxlength="24"></div>
           <div class="f"><label for="subtitle">Sous-titre</label><input type="text" id="subtitle" maxlength="28"></div>
         </div>
-        <label class="sw"><input type="checkbox" id="opt-pixtitle"><i></i><span>Titre composé en pixels</span></label>
+        <div class="f">
+          <label for="titleFont">Police du second mot</label>
+          <select id="titleFont"></select>
+        </div>
+        <label class="sw"><input type="checkbox" id="opt-pixtitle"><i></i><span>Premier mot composé en pixels</span></label>
         <label class="sw"><input type="checkbox" id="opt-legend"><i></i><span>Afficher la légende</span></label>
         <label class="sw"><input type="checkbox" id="opt-confetti"><i></i><span>Décor pixel autour de la planche</span></label>
         <div class="f" id="pixel-size-f">
@@ -394,7 +406,7 @@ input[type=color]{width:100%;height:30px;padding:2px;border:1px solid var(--line
       </section>
 
       <section class="sec">
-        <h2>Pastilles <span></span></h2>
+        <h2>Pastilles <span></span><span id="lab-legend"></span></h2>
         <div id="legend-editor"></div>
         <button class="leg-add" id="leg-add">+ Ajouter une pastille</button>
         <div class="f" style="margin-top:14px">
@@ -519,7 +531,7 @@ function bboxOf(els, R) {
       case "dot":  { const r = e.r != null ? e.r : R; acc(e.x - r, e.y - r, e.x + r, e.y + r); break; }
       case "disc": acc(e.x - e.r, e.y - e.r, e.x + e.r, e.y + e.r); break;
       case "text": {
-        const fam = e.family === "script" ? SCRIPT : SANS;
+        const fam = e.family || SANS;
         const w = measureW(e.s, e.size, e.weight, fam, e.italic) + e.s.length * e.track;
         const up = e.baseline === "alpha" ? e.size * .78 : e.size * .55;
         const dn = e.baseline === "alpha" ? e.size * .24 : e.size * .55;
@@ -621,10 +633,25 @@ function pixelText(c, glyphs, x, y, u, o) {
    3. Rendu SVG
    ------------------------------------------------------------------ */
 const SANS = "'Avenir Next','Segoe UI',Inter,Helvetica,system-ui,-apple-system,sans-serif";
-/* Une anglaise quand la machine en a une, une italique sinon. Les mesures
-   ci-dessous s'adaptent à la police qui répond réellement. */
-const SCRIPT = "'Snell Roundhand','Apple Chancery','Lucida Calligraphy','Segoe Script',"
-             + "'URW Chancery L',Z003,'Palatino Linotype',Palatino,'Iowan Old Style',Georgia,serif";
+/* Polices proposées pour le second mot du titre. Aucune n'est téléchargée :
+   chaque pile retombe sur ce que la machine possède, et les mesures faites
+   plus bas s'adaptent à celle qui répond réellement. */
+const TITLE_FONTS = {
+  anglaise: { name:"Anglaise", weight:500, italic:true,
+    stack:"'Snell Roundhand','Apple Chancery','Lucida Calligraphy','Segoe Script',"
+        + "'URW Chancery L',Z003,'Palatino Linotype',Palatino,'Iowan Old Style',Georgia,serif" },
+  serif:    { name:"Serif italique", weight:500, italic:true,
+    stack:"'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif" },
+  romain:   { name:"Serif droit", weight:600, italic:false,
+    stack:"'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif" },
+  sans:     { name:"Sans italique", weight:600, italic:true, stack:null },
+  batons:   { name:"Sans droit", weight:800, italic:false, stack:null },
+  machine:  { name:"Machine à écrire", weight:700, italic:false,
+    stack:"'Courier New',ui-monospace,'DejaVu Sans Mono',monospace" },
+  pixel:    { name:"Pixels", weight:800, italic:false, stack:null, pixel:true }
+};
+const TITLE_FONT_ORDER = ["anglaise","serif","romain","sans","batons","machine","pixel"];
+const titleFont = k => TITLE_FONTS[k] || TITLE_FONTS.anglaise;
 
 /* Mesure via un canvas : largeurs et hauteur de capitale exactes, quelle que
    soit la police qui a répondu. Sert à centrer et à aligner le titre. */
@@ -695,7 +722,7 @@ function renderEls(els, cfg) {
                           `${cls} fill="${col(e.fill)}" stroke="${col(e.stroke)}" stroke-width="${n3(e.w)}"${op}`));
         break;
       case "text": {
-        const fam = e.family === "script" ? SCRIPT : SANS;
+        const fam = e.family || SANS;
         const tr = e.rot ? ` transform="rotate(${e.rot} ${n3(e.x)} ${n3(e.y)})"` : "";
         const it = e.italic ? ' font-style="italic"' : "";
         const tk = e.track ? ` letter-spacing="${n3(e.track)}"` : "";
@@ -751,7 +778,7 @@ function registerDesign(d) { DESIGNS[d.id] = d; DESIGN_ORDER.push(d.id); }
 /* ---------- 4.1 CLASSIC : 12 mois × 31 jours ---------- */
 registerDesign({
   id: "classic",
-  name: "Classic",
+  name: "Classique",
   cadence: "Annuel",
   desc: "La vue d'ensemble : 12 lignes de mois, 31 colonnes de jours. On lit l'année entière d'un coup d'œil et les séries se voient tout de suite.",
   prefer: "landscape",
@@ -1269,13 +1296,19 @@ function buildHeader(s, design, width, fs) {
   const capH = glyphs ? 7 * u : size * .72;
   const wMain = glyphs ? pixelTextWidth(glyphs, u)
                        : measureW(main, size, 800, SANS, false) + main.length * size * .02;
-  // le mot cursif est mis à l'échelle pour que sa capitale fasse la même
-  // hauteur que le mot en pixels, puis posé sur la même ligne de base
-  const scrSize = script ? clamp(capH / capRatio(SCRIPT, true, 500), capH, capH * 2.6) : 0;
-  const wScr = script ? measureW(script, scrSize, 500, SCRIPT, true) : 0;
+
+  const F = titleFont(s.titleFont);
+  const fStack = F.stack || SANS;
+  const sGlyphs = script && F.pixel ? pixelGlyphs(script) : null;
+  // le second mot est mis à l'échelle pour que sa capitale fasse la même
+  // hauteur que le premier, puis posé sur la même ligne de base
+  const scrSize = script && !sGlyphs
+    ? clamp(capH / capRatio(fStack, F.italic, F.weight), capH * .8, capH * 2.8) : 0;
+  const wScr = sGlyphs ? pixelTextWidth(sGlyphs, capH / 7)
+             : script ? measureW(script, scrSize, F.weight, fStack, F.italic) : 0;
   const gap = main && script ? capH * .46 : 0;
   const total = wMain + gap + wScr;
-  const top = glyphs ? 2 * u : 0;             // deux rangées libres pour les accents
+  const top = glyphs || sGlyphs ? 2 * u : 0;  // deux rangées libres pour les accents
   const baseY = top + capH;                   // ligne de base commune
 
   let x = width / 2 - total / 2;
@@ -1285,9 +1318,10 @@ function buildHeader(s, design, width, fs) {
                { size, weight: 800, track: size * .02, baseline: "alpha" });
     x += wMain + gap;
   }
-  if (script)
+  if (sGlyphs) pixelText(c, sGlyphs, x, baseY - capH, capH / 7);
+  else if (script)
     c.txt(x + wScr / 2, baseY, script,
-          { size: scrSize, weight: 500, family: "script", italic: true, baseline: "alpha" });
+          { size: scrSize, weight: F.weight, family: fStack, italic: F.italic, baseline: "alpha" });
 
   const sub = (s.subtitle || "").trim() || ("· " + design.name.toLowerCase() + " ·");
   const subSize = clamp(capH * .26, 2.4, 5);
@@ -1551,7 +1585,7 @@ function defaults() {
     format:"a3", orient:"landscape", cw:210, ch:297, margin:14,
     sticker:STICKER_STD, gap:GAP_STD, maxSticker:STICKER_STD, maxGap:GAP_STD,
     shape:"circle", mark:"dot", tint:70, pixel:3,
-    theme:"picole", title:"PIXEL Picole", subtitle:"",
+    theme:"picole", title:"PIXEL Picole", subtitle:"", titleFont:"anglaise",
     legendOn:true, confetti:true, guides:true, pixelTitle:true,
     preview:false, previewSeed:1,
     legend: themeLegend("picole"), opts:{}
@@ -1571,12 +1605,59 @@ try {
   S.sticker = clamp(S.sticker, 1, S.maxSticker);
   S.gap = clamp(S.gap, 0, S.maxGap);
   if (!THEMES[S.theme]) S.theme = "picole";
+  if (!TITLE_FONTS[S.titleFont]) S.titleFont = "anglaise";
   if (!DESIGNS[S.design]) S.design = "classic";
   if (!S.opts) S.opts = {};
 } catch (e) { /* premier lancement */ }
 
 const printStyle = document.createElement("style");
 document.head.appendChild(printStyle);
+
+/* ---------- retour au réglage par défaut, réglage par réglage ----------
+   Une petite flèche apparaît à côté d'un réglage dès qu'il s'écarte de sa
+   valeur d'origine, et le remet seul. Les options propres à une édition
+   utilisent data-opt au lieu de data-k. */
+const D = defaults();
+const isDefault = k => JSON.stringify(S[k]) === JSON.stringify(D[k]);
+
+function addReset(host, key, opt, def) {
+  if (!host) return;
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "rst";
+  b.hidden = true;
+  b.title = "Revenir au réglage par défaut";
+  b.textContent = "↺";
+  if (opt) { b.dataset.opt = opt; b.dataset.def = JSON.stringify(def); }
+  else b.dataset.k = key;
+  host.appendChild(b);
+}
+
+function syncResets() {
+  document.querySelectorAll(".rst").forEach(b => {
+    if (b.dataset.opt) b.hidden = JSON.stringify(optVal(b.dataset.opt)) === b.dataset.def;
+    else b.hidden = isDefault(b.dataset.k);
+  });
+}
+
+document.addEventListener("click", e => {
+  const b = e.target.closest(".rst");
+  if (!b) return;
+  e.preventDefault();
+  e.stopPropagation();
+  if (b.dataset.opt) {
+    const o = S.opts[S.design];
+    if (o) delete o[b.dataset.opt];
+    buildDesignOptions();
+  } else {
+    const k = b.dataset.k;
+    S[k] = JSON.parse(JSON.stringify(D[k]));
+    if (k === "legend") buildLegendEditor();
+    if (k === "design") { buildDesignCards(); buildDesignOptions(); }
+  }
+  syncInputs();
+  render();
+});
 
 /* ---------- construction des contrôles ---------- */
 function buildDesignCards() {
@@ -1615,6 +1696,7 @@ function buildDesignOptions() {
       const inp = l.querySelector("input");
       inp.checked = !!optVal(op.id);
       inp.onchange = () => setOpt(op.id, inp.checked);
+      addReset(l, null, op.id, op.def);
       host.appendChild(l);
     } else if (op.type === "select") {
       const f = document.createElement("div");
@@ -1625,6 +1707,7 @@ function buildDesignOptions() {
       const sel = f.querySelector("select");
       sel.value = optVal(op.id);
       sel.onchange = () => setOpt(op.id, sel.value);
+      addReset(f.querySelector("label"), null, op.id, op.def);
       host.appendChild(f);
     }
   });
@@ -1657,6 +1740,10 @@ $("#leg-add").onclick = () => {
   S.legend.push({ label:"NOUVEAU", hint:"", color: spare[S.legend.length % spare.length] });
   buildLegendEditor(); render();
 };
+
+$("#titleFont").innerHTML = TITLE_FONT_ORDER
+  .map(k => `<option value="${k}">${esc(TITLE_FONTS[k].name)}</option>`).join("");
+$("#titleFont").onchange = e => { S.titleFont = e.target.value; syncInputs(); render(); };
 
 $("#theme").innerHTML = THEME_ORDER
   .map(k => `<option value="${k}">${esc(THEMES[k].label)}${k === "picole" ? " · défaut" : ""}</option>`).join("")
@@ -1704,6 +1791,7 @@ function syncInputs() {
   $("#tint").value = S.tint; $("#tintN").value = S.tint;
   $("#pixel-size-f").hidden = !S.confetti;
   $("#theme").value = S.theme;
+  $("#titleFont").value = S.titleFont;
   $("#title").value = S.title; $("#subtitle").value = S.subtitle;
   $("#subtitle").placeholder = "· " + DESIGNS[S.design].name.toLowerCase() + " ·";
   $("#opt-legend").checked = S.legendOn;
@@ -1712,6 +1800,7 @@ function syncInputs() {
   $("#opt-pixtitle").checked = S.pixelTitle;
   $("#opt-preview").checked = S.preview;
   $("#preview-note").hidden = !S.preview;
+  syncResets();
   $("#orient").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === S.orient));
   $("#mark").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === S.mark));
   $("#shape").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === S.shape));
@@ -1783,6 +1872,7 @@ function render() {
   raf = requestAnimationFrame(draw);
 }
 function draw() {
+  syncResets();
   try { drawSheet(); }
   catch (err) {
     const st = $("#status");
@@ -1906,6 +1996,17 @@ try {
 } catch (e) {}
 
 /* ---------- démarrage ---------- */
+[["start","start"], ["format","format"], ["cw","cw"], ["ch","ch"], ["margin","margin"],
+ ["sticker","sticker"], ["gap","gap"], ["maxSticker","maxSticker"], ["maxGap","maxGap"],
+ ["tint","tint"], ["pixel","pixel"], ["title","title"], ["subtitle","subtitle"],
+ ["titleFont","titleFont"], ["theme","theme"]
+].forEach(([id, key]) => addReset(document.querySelector(`label[for="${id}"]`), key));
+[["lab-orient","orient"], ["lab-shape","shape"], ["lab-mark","mark"], ["lab-legend","legend"]]
+  .forEach(([id, key]) => addReset(document.getElementById(id), key));
+[["opt-pixtitle","pixelTitle"], ["opt-legend","legendOn"], ["opt-confetti","confetti"],
+ ["opt-guides","guides"], ["opt-preview","preview"]
+].forEach(([id, key]) => addReset(document.getElementById(id).closest("label.sw"), key));
+
 buildDesignCards();
 buildDesignOptions();
 buildLegendEditor();

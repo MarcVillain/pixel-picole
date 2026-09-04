@@ -8,7 +8,7 @@
 
 Printable tracker sheets. A single HTML file with no dependencies.
 
-<img src="assets/classic.png" width="88%" alt="Classic sheet">
+<img src="assets/classic.png" width="88%" alt="Classique sheet">
 
 <img src="assets/4-saisons.png" width="43%" alt="4 Saisons sheet">
 <img src="assets/spirale.png" width="43%" alt="Spirale sheet">
@@ -45,6 +45,10 @@ Open `index.html` in a browser. Pick an edition, a start date, a paper size and 
 sticker shape. The filled preview draws a plausible year so you can judge the
 colours before buying anything. Print at full size, or export SVG.
 
+The title takes any of several fonts, and the first word can be set in pixel
+squares. Any setting that differs from its default shows a small arrow next to
+it, which puts that one setting back.
+
 Settings stay in your browser. The interface is in French, and every label on the
 sheet is editable.
 
@@ -52,7 +56,7 @@ sheet is editable.
 
 | | |
 | --- | --- |
-| **Classic** | The whole year in one grid. Streaks jump out. |
+| **Classique** | The whole year in one grid. Streaks jump out. |
 | **4 Saisons** | Weeks grouped by season, with a column to rate each week. |
 | **Mensuel** | Twelve small calendars on real weekdays. Shows the weekend effect. |
 | **Spirale** | The year as one continuous ribbon. |
